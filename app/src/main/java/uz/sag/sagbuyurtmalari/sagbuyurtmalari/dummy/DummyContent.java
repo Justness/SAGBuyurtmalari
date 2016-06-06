@@ -25,6 +25,8 @@ public class DummyContent {
 
     private static final int COUNT = 25;
 
+
+
     static {
         // Add some sample items.
         for (int i = 1; i <= COUNT; i++) {
@@ -57,6 +59,7 @@ public class DummyContent {
         public final String id;
         public final String content;
         public final String details;
+        public String meaning;
 
         public DummyItem(String id, String content, String details) {
             this.id = id;
