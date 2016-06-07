@@ -27,7 +27,7 @@ public class ArticleDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_detail);
-       // Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         //setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);

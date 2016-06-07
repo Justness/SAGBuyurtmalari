@@ -2,9 +2,15 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -30,6 +36,9 @@ public class ArticleListFragment extends ListFragment {
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
+    private int mColumnCount = 3;
+
+    private CollectionFragment.OnListFragmentInteractionListener mListener;
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -61,7 +70,9 @@ public class ArticleListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),android.R.layout.simple_list_item_activated_1, android.R.id.text1, DummyContent.ITEMS));
+
     }
 
     @Override
@@ -71,6 +82,14 @@ public class ArticleListFragment extends ListFragment {
         if (savedInstanceState != null && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
+        Context context = view.getContext();
+        RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.article_list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+        }
+        recyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS, mListener));
     }
 
     @Override
@@ -106,6 +125,12 @@ public class ArticleListFragment extends ListFragment {
             // Serialize and persist the activated item position.
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
         }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.article_list,null);
+        return view;//super.onCreateView(inflater, container, savedInstanceState);
     }
 
     /**

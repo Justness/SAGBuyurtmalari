@@ -11,7 +11,7 @@
     <fragment
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:name="uz.sag.sagbuyurtmalari.sagbuyurtmalari.ArticleListActivity"
+        android:name="uz.sag.sagbuyurtmalari.sagbuyurtmalari.ArticleListFragment"
         android:id="@+id/fragment"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
