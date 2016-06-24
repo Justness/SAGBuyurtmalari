@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,9 +18,7 @@ import android.view.MenuItem;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-                    CollectionFragment.OnListFragmentInteractionListener,
-                    ArticleListFragment.Callbacks{
+        implements NavigationView.OnNavigationItemSelectedListener, ArticleListFragment.Callbacks{
 
     private boolean mTwoPane;
 
@@ -39,7 +38,9 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
-
+//        Log.d("MainActivity","Started");
+//        Log.v("MainActivity","Started");
+//        Log.i("MainActivity","Started");
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -49,16 +50,17 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        if (findViewById(R.id.article_detail_container) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-large and
-            // res/values-sw600dp). If this view is present, then the
-            // activity should be in two-pane mode.
+        if (findViewById(R.id.article_list) != null) {
+//            // The detail container view will be present only in the
+//            // large-screen layouts (res/values-large and
+//            // res/values-sw600dp). If this view is present, then the
+//            // activity should be in two-pane mode.
             mTwoPane = true;
+//
+//            // In two-pane mode, list items should be given the
+//            // 'activated' state when touched.
 
-            // In two-pane mode, list items should be given the
-            // 'activated' state when touched.
-            ((ArticleListFragment) getSupportFragmentManager().findFragmentById(R.id.article_list)).setActivateOnItemClick(true);
+            ((ArticleListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment)).setActivateOnItemClick(true);
         }
     }
 
@@ -121,32 +123,32 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
-
-    }
-
-    /**
-     * Callback method from {@link ArticleListFragment.Callbacks}
-     * indicating that the item with the given ID was selected.
-     */
-    @Override
     public void onItemSelected(String id) {
-        if (mTwoPane) {
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
-            ArticleListFragment fragment = new ArticleListFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
-
-        } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
-            Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
-            detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
-            startActivity(detailIntent);
-        }
+        // if (mTwoPane) {
+        // In two-pane mode, show the detail view in this activity by
+        // adding or replacing the detail fragment using a
+        // fragment transaction.
+//                    Bundle arguments = new Bundle();
+//                    arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
+//                    ArticleListFragment fragment = new ArticleListFragment();
+//                    fragment.setArguments(arguments);
+//                    getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
+       // mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS2, mCallbacks, mImageFetcher));
+//                } else {
+//                    // In single-pane mode, simply start the detail activity
+//                    // for the selected item ID.
+//                    Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
+//                    detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
+//                    startActivity(detailIntent);
+//                }
     }
+
+    @Override
+    public void onSubItemSelected(DummyContent.DummyItem item) {
+        Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
+        detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, item.id);
+        startActivity(detailIntent);
+    }
+
+
 }

@@ -1,8 +1,8 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
-
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -11,14 +11,24 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent2;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageCache;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageFetcher;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.Utils;
 
 
 public class ArticleListFragment extends ListFragment {
 
+    /**
+     *
+     */
+    private static final String TAG = "ImageGridFragment";
+    private static final String IMAGE_CACHE_DIR = "thumbs";
     /**
      * The serialization (saved instance state) Bundle key representing the
      * activated item position. Only used on tablets.
@@ -36,9 +46,16 @@ public class ArticleListFragment extends ListFragment {
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
-    private int mColumnCount = 3;
+    private int mColumnCount = 4;
 
-    private CollectionFragment.OnListFragmentInteractionListener mListener;
+
+    private int mImageThumbSize;
+    private int mImageThumbSpacing;
+    //private ImageAdapter mAdapter;
+    private ImageFetcher mImageFetcher;
+
+    private RecyclerView mRecyclerView;
+   // private Callbacks.onS mListener;
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -49,6 +66,7 @@ public class ArticleListFragment extends ListFragment {
          * Callback for when an item has been selected.
          */
         public void onItemSelected(String id);
+        public void onSubItemSelected(DummyContent.DummyItem item);
     }
 
     /**
@@ -58,6 +76,12 @@ public class ArticleListFragment extends ListFragment {
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
         public void onItemSelected(String id) {
+        }
+
+        @Override
+        public void onSubItemSelected(DummyContent.DummyItem item) {
+
+
         }
     };
 
@@ -71,6 +95,20 @@ public class ArticleListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
+        mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
+
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(getActivity(), IMAGE_CACHE_DIR);
+
+        cacheParams.setMemCacheSizePercent(0.3f); // Set memory cache to 25% of app memory
+
+        mImageFetcher = new ImageFetcher(getActivity(), mImageThumbSize);
+        mImageFetcher.setLoadingImage(R.drawable.empty_photo);
+        mImageFetcher.addImageCache(getActivity().getSupportFragmentManager(), cacheParams);
+
+
+
         setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),android.R.layout.simple_list_item_activated_1, android.R.id.text1, DummyContent.ITEMS));
 
     }
@@ -83,13 +121,61 @@ public class ArticleListFragment extends ListFragment {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
         Context context = view.getContext();
-        RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.article_list);
+        mRecyclerView = (RecyclerView) getView().findViewById(R.id.article_list);
         if (mColumnCount <= 1) {
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
         } else {
-            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+            mRecyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
-        recyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+        //recyclerView.setOnScrollListener(new AbsListView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+//                // Pause fetcher to ensure smoother scrolling when flinging
+//                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+//                    // Before Honeycomb pause image loading on scroll to help with performance
+//                    if (!Utils.hasHoneycomb()) {
+//                        mImageFetcher.setPauseWork(true);
+//                    }
+//                } else {
+//                    mImageFetcher.setPauseWork(false);
+//                }
+//            }
+//
+//            @Override
+//            public void onScroll(AbsListView absListView, int firstVisibleItem,
+//                                 int visibleItemCount, int totalItemCount) {
+//            }
+//        });
+        mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS, mCallbacks, mImageFetcher));
+        mCallbacks = new Callbacks() {
+
+            @Override
+            public void onItemSelected(String id) {
+               // if (mTwoPane) {
+                    // In two-pane mode, show the detail view in this activity by
+                    // adding or replacing the detail fragment using a
+                    // fragment transaction.
+//                    Bundle arguments = new Bundle();
+//                    arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
+//                    ArticleListFragment fragment = new ArticleListFragment();
+//                    fragment.setArguments(arguments);
+//                    getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
+                mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS2, mCallbacks, mImageFetcher));
+//                } else {
+//                    // In single-pane mode, simply start the detail activity
+//                    // for the selected item ID.
+//                    Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
+//                    detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
+//                    startActivity(detailIntent);
+//                }
+            }
+
+            @Override
+            public void onSubItemSelected(DummyContent.DummyItem item) {
+
+            }
+        };
+
     }
 
     @Override
@@ -130,7 +216,8 @@ public class ArticleListFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.article_list,null);
-        return view;//super.onCreateView(inflater, container, savedInstanceState);
+        //super.onCreateView(inflater, container, savedInstanceState);
+        return view;
     }
 
     /**

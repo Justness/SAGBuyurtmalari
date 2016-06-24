@@ -1,7 +1,5 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,19 +13,17 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.provider.Images;
  * <p/>
  * TODO: Replace all uses of this class before publishing your app.
  */
-public class DummyContent {
+public class DummyContent2 {
 
     /**
      * An array of sample (dummy) items.
      */
     public static final List<DummyItem> ITEMS = new ArrayList<DummyItem>();
-    public static final List<DummyItem> ITEMS2 = new ArrayList<DummyItem>();
 
     /**
      * A map of sample (dummy) items, by ID.
      */
     public static final Map<String, DummyItem> ITEM_MAP = new HashMap<String, DummyItem>();
-    public static final Map<String, DummyItem> ITEM_MAP2 = new HashMap<String, DummyItem>();
 
     private static final int COUNT = 25;
 
@@ -37,7 +33,6 @@ public class DummyContent {
         // Add some sample items.
         for (int i = 1; i <= COUNT; i++) {
             addItem(createDummyItem(i));
-            addItem2(createDummyItem2(i));
         }
     }
 
@@ -46,17 +41,8 @@ public class DummyContent {
         ITEM_MAP.put(item.id, item);
     }
 
-    private static void addItem2(DummyItem item) {
-        ITEMS2.add(item);
-        ITEM_MAP2.put(item.id, item);
-    }
-
     private static DummyItem createDummyItem(int position) {
-        return new DummyItem(String.valueOf(position), "Item " + position, makeDetails(position), Images.imageThumbUrls[0]);
-    }
-
-    private static DummyItem createDummyItem2(int position) {
-        return new DummyItem(String.valueOf(position), "Item 2" , makeDetails(position), Images.imageThumbUrls[0]);
+        return new DummyItem(String.valueOf(position), "Item 2", makeDetails(position), Images.imageThumbUrls[0]);
     }
 
     private static String makeDetails(int position) {

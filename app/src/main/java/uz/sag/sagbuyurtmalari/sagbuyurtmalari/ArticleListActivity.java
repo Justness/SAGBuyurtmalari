@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
+
 public class ArticleListActivity extends FragmentActivity implements ArticleListFragment.Callbacks {
 
     /**
@@ -32,7 +34,7 @@ public class ArticleListActivity extends FragmentActivity implements ArticleList
 
     /**
      * Callback method from {@link ArticleListFragment.Callbacks}
-     * indicating that the item with the given ID was selected.
+     * indicating that the article (rug) with the given name (ID) was selected.
      */
     @Override
     public void onItemSelected(String id) {
@@ -53,6 +55,11 @@ public class ArticleListActivity extends FragmentActivity implements ArticleList
             detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
             startActivity(detailIntent);
         }
+    }
+
+    @Override
+    public void onSubItemSelected(DummyContent.DummyItem item) {
+
     }
 }
 
