@@ -2,7 +2,6 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -11,15 +10,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent2;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageCache;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageFetcher;
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.Utils;
 
 
 public class ArticleListFragment extends ListFragment {
@@ -189,10 +185,17 @@ public class ArticleListFragment extends ListFragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         // Reset the active callbacks interface to the dummy implementation.
         mCallbacks = sDummyCallbacks;
+
+        mRecyclerView = null;
     }
 
     @Override

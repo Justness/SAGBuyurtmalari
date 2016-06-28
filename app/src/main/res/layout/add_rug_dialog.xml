@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal">
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <SeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:max="500"
+            android:id="@+id/rugwidth"
+            android:minWidth="@dimen/slider_width"
+            android:layout_weight="10" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:id="@+id/widthvalue"
+            android:maxLength="3"
+            android:maxWidth="@dimen/slider_value_width"
+            android:layout_weight="1"
+            android:width="@dimen/slider_value_width" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <SeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:max="2500"
+            android:id="@+id/rugheight"
+            android:minWidth="@dimen/slider_width"
+            android:layout_weight="10" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:id="@+id/heightvalue"
+            android:maxLength="4"
+            android:layout_weight="1"
+            android:maxWidth="@dimen/slider_value_width"
+            android:width="@dimen/slider_value_width" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical|center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/textView2"
+            android:text="@string/quantity" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:id="@+id/quantityminus" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="none|numberDecimal"
+            android:ems="10"
+            android:id="@+id/quantity"
+            android:maxLength="2"
+            android:maxWidth="@dimen/slider_value_width"
+            android:width="@dimen/slider_value_width"
+            android:editable="false"
+            android:text="0" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+"
+            android:id="@+id/quantityplus" />
+    </LinearLayout>
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shape"
+        android:textOn="O"
+        android:textOff="R"
+        android:id="@+id/shape"
+        android:gravity="center_horizontal" />
+</LinearLayout>

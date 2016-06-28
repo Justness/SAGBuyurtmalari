@@ -3,24 +3,28 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ArticleListFragment.Callbacks{
+        implements NavigationView.OnNavigationItemSelectedListener, ArticleListFragment.Callbacks,
+        OrderListFragment.Callbacks {
+
 
     private boolean mTwoPane;
+    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +53,9 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        mRecyclerView = (RecyclerView) findViewById(R.id.article_list);
 
-        if (findViewById(R.id.article_list) != null) {
+        if (mRecyclerView != null) {
 //            // The detail container view will be present only in the
 //            // large-screen layouts (res/values-large and
 //            // res/values-sw600dp). If this view is present, then the
@@ -102,14 +107,29 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_camera) {//Catalog
             // Handle the camera action
+            Bundle arguments = new Bundle();
+            //  arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
+            ArticleListFragment fragment = new ArticleListFragment();
+            fragment.setArguments(arguments);
+            getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
+            mRecyclerView.setVisibility(View.VISIBLE);
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
-
+        } else if (id == R.id.nav_manage) { //Orders
+            // fragment transaction.
+            Bundle arguments = new Bundle();
+            //arguments.putString(OrderListFragment.ARG_ITEM_ID, id);
+            OrderListFragment fragment = new OrderListFragment();
+            fragment.setArguments(arguments);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment, fragment);
+            // transaction.addToBackStack(null);
+            transaction.commit();
+            mRecyclerView.setVisibility(View.GONE);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
@@ -133,7 +153,7 @@ public class MainActivity extends AppCompatActivity
 //                    ArticleListFragment fragment = new ArticleListFragment();
 //                    fragment.setArguments(arguments);
 //                    getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
-       // mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS2, mCallbacks, mImageFetcher));
+        // mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(DummyContent.ITEMS2, mCallbacks, mImageFetcher));
 //                } else {
 //                    // In single-pane mode, simply start the detail activity
 //                    // for the selected item ID.
@@ -150,5 +170,11 @@ public class MainActivity extends AppCompatActivity
         startActivity(detailIntent);
     }
 
+    @Override
+    public void onOrderItemSelected(String id) {
+        Intent detailIntent = new Intent(this, OrderDetailActivity.class);
+        detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
+        startActivity(detailIntent);
+    }
 
 }

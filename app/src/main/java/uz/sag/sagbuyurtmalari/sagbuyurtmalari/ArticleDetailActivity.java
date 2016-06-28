@@ -3,30 +3,23 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Debug;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.*;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ViewSwitcher;
 
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.ArticleDetailFragment;
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.ArticleListActivity;
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.R;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.ui.AddRugDialog;
 
@@ -44,7 +37,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
     int imageSwitcherImages[] = {R.drawable.gilam1, R.drawable.gilam2, R.drawable.gilam3 };
 
     int switcherImage = imageSwitcherImages.length;
-    int counter = -1;
+    int counter = 0;
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
