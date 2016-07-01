@@ -9,15 +9,15 @@
 
     <ListView
         android:id="@id/android:list"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="3"
         android:drawSelectorOnTop="false"
-        android:layout_marginTop="@dimen/app_bar_height" />
+        android:layout_marginTop="@dimen/app_bar_height"
+        android:layout_weight="2" />
 
     <TextView
         android:id="@id/android:empty"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="#FF0000"
         android:text="No data"
@@ -25,7 +25,7 @@
 
     <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/article_list"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="match_parent"
         android:layout_marginLeft="8dp"

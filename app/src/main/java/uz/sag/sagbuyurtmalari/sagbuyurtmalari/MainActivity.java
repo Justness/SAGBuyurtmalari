@@ -16,7 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ArticleListFragment.Callbacks,
@@ -27,9 +27,39 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mRecyclerView;
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DatabaseOpenHelper.getInstance(this.getBaseContext()).close();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //INIT DATABASE
+        //initializeDBHelper();
+
+//        try
+//        {
+//            // get input stream
+//            //FileInputStream ims = mContext.openFileInput("");
+//            // load image as Drawable
+//            //Drawable d = Drawable.createFromStream(ims, null);
+//            // set image to ImageView
+//            //holder.mImgUrl.setImageDrawable(d);
+//            String FILENAME = "hello_file";
+//            String string = "hello world!";
+//
+//            FileOutputStream fos = getBaseContext().openFileOutput(FILENAME, Context.MODE_PRIVATE);
+//            fos.write(string.getBytes());
+//            fos.close();
+//        }
+//        catch(IOException ex)
+//        {
+//            return;
+//        }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
@@ -42,9 +72,7 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
-//        Log.d("MainActivity","Started");
-//        Log.v("MainActivity","Started");
-//        Log.i("MainActivity","Started");
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -67,6 +95,7 @@ public class MainActivity extends AppCompatActivity
 
             ((ArticleListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment)).setActivateOnItemClick(true);
         }
+
     }
 
     @Override
@@ -164,9 +193,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSubItemSelected(DummyContent.DummyItem item) {
+    public void onSubItemSelected(String item) {
         Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
-        detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, item.id);
+        detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, item);
         startActivity(detailIntent);
     }
 
