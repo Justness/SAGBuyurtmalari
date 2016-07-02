@@ -1,10 +1,7 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 
 public class ArticleListActivity extends FragmentActivity implements ArticleListFragment.Callbacks {
 
@@ -36,29 +33,29 @@ public class ArticleListActivity extends FragmentActivity implements ArticleList
      * Callback method from {@link ArticleListFragment.Callbacks}
      * indicating that the article (rug) with the given name (ID) was selected.
      */
-    @Override
-    public void onItemSelected(String id) {
-        if (mTwoPane) {
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
-            ArticleDetailFragment fragment = new ArticleDetailFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
+//    @Override
+//    public void onItemSelected(String id) {
+//        if (mTwoPane) {
+//            // In two-pane mode, show the detail view in this activity by
+//            // adding or replacing the detail fragment using a
+//            // fragment transaction.
+//            Bundle arguments = new Bundle();
+//            arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
+//            ArticleDetailFragment fragment = new ArticleDetailFragment();
+//            fragment.setArguments(arguments);
+//            getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
+//
+//        } else {
+//            // In single-pane mode, simply start the detail activity
+//            // for the selected item ID.
+//            Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
+//            detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
+//            startActivity(detailIntent);
+//        }
+//    }
 
-        } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
-            Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
-            detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
-            startActivity(detailIntent);
-        }
-    }
-
     @Override
-    public void onSubItemSelected(DummyContent.DummyItem item) {
+    public void onSubItemSelected(String item) {
 
     }
 }

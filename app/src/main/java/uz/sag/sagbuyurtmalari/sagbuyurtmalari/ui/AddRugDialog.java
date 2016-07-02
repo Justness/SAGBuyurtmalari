@@ -20,6 +20,23 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.R;
 public class AddRugDialog extends DialogFragment {
 
     private EditText mWidthValue;
+
+    public String getWidthValue() {
+        return mWidthValue.getText().toString();
+    }
+
+    public String getHeightValue() {
+        return mHeightValue.getText().toString();
+    }
+
+    public String getQuantityValue() {
+        return mQuantityValue.getText().toString();
+    }
+
+    public Boolean getFinishingValue() {
+        return mFinishingValue;
+    }
+
     private EditText mHeightValue;
     private EditText mQuantityValue;
     private Boolean mFinishingValue; // R = False O = TRUE

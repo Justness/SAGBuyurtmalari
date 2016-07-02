@@ -7,6 +7,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +24,7 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.MyCollectionRecyclerViewAdapter;
  */
 public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
+    private static final String ORDERS_TABLE = "orders";
     private static DatabaseOpenHelper sInstance;
 
     //The Android's default system path of your application database.
@@ -42,6 +44,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
             "size_code",
             "url"};
     private static final int GALLERY_IMAGE_URL_LENGTH = 19;
+
 
     private static final String TAG = "DatabaseOpenHelper :";
     private final Context myContext;
@@ -82,11 +85,12 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         if (dbExist) {
             //do nothing - database already exist
+
         } else {
 
             //By calling this method and empty database will be created into the default system path
             //of your application so we are gonna be able to overwrite that database with our database.
-            this.getReadableDatabase();
+            this.getWritableDatabase();
 
             try {
 
@@ -112,7 +116,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         try {
             String myPath = DATABASE_PATH + DATABASE_NAME;
-            checkDB = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+            checkDB = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
 
         } catch (SQLiteException e) {
 
@@ -163,7 +167,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         //Open the database
         String myPath = DATABASE_PATH + DATABASE_NAME;
-        myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+        myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
 
     }
 
@@ -240,22 +244,28 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         File f = new File(path);
         File list[] = f.listFiles();
         // try {
+        int s = 0;
+        long rs;
 //            list = myContext.getAssets().list(path);
         if (list.length > 0) {
             // This is a folder
             for (File file2 : list) {
-                String file = file2.getAbsolutePath();
+                s++;
+                String file = file2.getName();
+
                 if (file.length() == GALLERY_IMAGE_URL_LENGTH) {
-                    insertImageIntoGallery(file.substring(0, 2), file.substring(2, 6),
+                    insertImageExecSql(String.valueOf(s), file.substring(0, 2), file.substring(2, 6),
                             file.substring(7, 9), file.substring(9, 10),
                             file.substring(10, 11), file.substring(12, 15), file);
                 }
 
-                return false;
+                if (s % 100 == 0) Log.w(TAG, String.valueOf(s));
+
             }
         } else {
             // This is a file
             // TODO: add file name to an array list
+            return false;
         }
 //        } catch (IOException e) {
 //            return false;
@@ -266,6 +276,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public long insertImageIntoGallery(String quality_code, String design_name, String pallete_name, String rugcolour_backgroundcolour_id,
                                        String rugcolour_maincolour_id, String size_code, String url) {
+
         ContentValues initialValues = new ContentValues();
         initialValues.put(GALLERY_TABLE_FIELDS[0], quality_code);
         initialValues.put(GALLERY_TABLE_FIELDS[1], design_name);
@@ -278,11 +289,29 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         return this.myDataBase.insert(GALLERY_TABLE, null, initialValues);
     }
 
+    public void insertImageExecSql(String s, String quality_code, String design_name, String pallete_name, String rugcolour_backgroundcolour_id,
+                                   String rugcolour_maincolour_id, String size_code, String url) {
+        String test = "INSERT INTO " +
+                "gallery(_id, quality_code, " +
+                "design_name, " +
+                "pallete_name, " +
+                "rugcolour_backgroundcolour_id, " +
+                "rugcolour_maincolour_id, " +
+                "size_code, " +
+                "url) VALUES (" + s + ",\'" + quality_code + "\', " +
+                "\'" + design_name + "\', " +
+                "\'" + pallete_name + "\', " +
+                "\'" + rugcolour_backgroundcolour_id + "\', " +
+                "\'" + rugcolour_maincolour_id + "\', " +
+                "\'" + size_code + "\', " +
+                "\'" + url + "\' )";
+        this.myDataBase.execSQL(test);
+
+    }
+
     public List<MyCollectionRecyclerViewAdapter.Miniature> getImages(String cond) throws SQLException {
 
-        Cursor mCursor =
-
-                this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[0], GALLERY_TABLE_FIELDS[7]}, cond, null, null, null, null, null);
+        Cursor mCursor = this.myDataBase.query(true, GALLERY_TABLE, new String[]{"MAX(" + GALLERY_TABLE_FIELDS[0] + ")", "MAX(" + GALLERY_TABLE_FIELDS[7] + ")"}, cond, null, GALLERY_TABLE_FIELDS[1] + "," + GALLERY_TABLE_FIELDS[2], null, null, null);
 
         List<MyCollectionRecyclerViewAdapter.Miniature> miniatures = new ArrayList<>();
         if (mCursor.moveToFirst()) {
@@ -295,4 +324,27 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         return miniatures;
     }
+
+
+    public Cursor getImagesCursor(String cond) throws SQLException {
+
+        return this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[0], GALLERY_TABLE_FIELDS[7]}, cond, null, null, null, null, null);
+    }
+
+    public Cursor getAllOrders() {
+        Cursor mCursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"orderdata", "totalquantity",
+                "totalarea", "status"}, null, null, null, null, null);
+        if (mCursor != null) {
+            mCursor.moveToFirst();
+        }
+
+        return mCursor;
+    }
+
+    public boolean createNewOrder() {
+
+        return true;
+    }
+
+
 }

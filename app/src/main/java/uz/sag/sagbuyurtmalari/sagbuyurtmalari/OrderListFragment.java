@@ -3,12 +3,14 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 
 
@@ -39,6 +41,8 @@ public class OrderListFragment extends ListFragment {
      * implement. This mechanism allows activities to be notified of item
      * selections.
      */
+
+    private SimpleCursorAdapter mAdapter;
     public interface Callbacks {
         /**
          * Callback for when an item has been selected.
@@ -69,7 +73,20 @@ public class OrderListFragment extends ListFragment {
         super.onCreate(savedInstanceState);
 
 
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(), android.R.layout.simple_list_item_activated_1, android.R.id.text1, DummyContent.ITEMS));
+        mAdapter = new SimpleCursorAdapter(
+                getContext(), // Context.
+                android.R.layout.two_line_list_item,  // Specify the row template to use (here, two columns bound to the two retrieved cursor   rows).
+                DatabaseOpenHelper.getInstance(getContext()).getAllOrders(),                                              // Pass in the cursor to bind to.
+                new String[]{"orderdata" + "totalquantity",
+                        "totalarea" + "status"},           // Array of cursor columns to bind to.
+                new int[]{android.R.id.text1, android.R.id.text2}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+        //@TODO may be memory leaks
+        setListAdapter(mAdapter);
+//        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
+//                android.R.layout.simple_list_item_activated_1,
+//                android.R.id.text1,
+//                DummyContent.ITEMS)
+//        );
 
     }
 

@@ -28,6 +28,7 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageFetcher;
 public class MyCollectionRecyclerViewAdapter extends RecyclerView.Adapter<MyCollectionRecyclerViewAdapter.ViewHolder> {
 
     public static final String THUMBS_DIRECTORY = "/saggallery/thumbs/";
+    public static final String IMAGES_DIRECTORY = "/saggallery/";
     public static String THUMBS_DIRECTORY_ABS;
 
 
@@ -46,6 +47,7 @@ public class MyCollectionRecyclerViewAdapter extends RecyclerView.Adapter<MyColl
         mListener = listener;
         // mImageFetcher = imageFetcher;
         mContext = context;
+        mSize = miniatures.size();
 
         if (isExternalStorageReadable()) {
 
@@ -70,38 +72,43 @@ public class MyCollectionRecyclerViewAdapter extends RecyclerView.Adapter<MyColl
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        // holder.mIdView.setText(mValues.get(position).id);
-       // mImageFetcher.loadImage(Images.imageThumbUrls[0 ],  holder.mImgUrl);
-        holder.mContentView.setText(mValues.get(position).title);
-        //Picasso.with(mContext).load(mContext.getAssets().
-//        if (isExternalStorageReadable()) {
+        String file = THUMBS_DIRECTORY_ABS + mValues.get(position).imgUrl;
+        File f = new File(file);
+        if (f.exists()) {
+            Bitmap myBitmap = BitmapFactory.decodeFile(file);
+            //double coef = myBitmap.getHeight()/myBitmap.getWidth();
 
-        //String url = "http://thenextweb.com/apps/files/2010/03/google_logo.jpg";
+            //Don't show ugly almost invisible images
+            // if ((coef>3.5) ||( coef < 0.35)) //holder.mImgUrl.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            {
+                holder.mItem = mValues.get(position);
+                // holder.mIdView.setText(mValues.get(position).id);
+                // mImageFetcher.loadImage(Images.imageThumbUrls[0 ],  holder.mImgUrl);
+                holder.mContentView.setText(mValues.get(position).title);
+                //Picasso.with(mContext).load(mContext.getAssets().
+                //if (isExternalStorageReadable()) {
+                //String url = "http://thenextweb.com/apps/files/2010/03/google_logo.jpg";
+                //holder.mContentView.setText(file.getPath()+THUMBS_DIRECTORY+"AC0023_PC73_028.jpg");
+                // get input stream
+                // load image as Drawable
+                holder.mImgUrl.setImageBitmap(myBitmap);
+//                double coef = holder.mImgUrl.getWidth()/holder.mImgUrl.getHeight();
+//                if ((coef>3.5) ||( coef < 0.35)) holder.mImgUrl.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        //holder.mContentView.setText(file.getPath()+THUMBS_DIRECTORY+"AC0023_PC73_028.jpg");
-        // get input stream
-        Bitmap myBitmap = BitmapFactory.decodeFile(THUMBS_DIRECTORY_ABS + mValues.get(position).imgUrl);
-
-//            // load image as Drawable
-
-        holder.mImgUrl.setImageBitmap(myBitmap);
-
-//        }
-
-        // holder.mImgUrl.setImageResource(R.drawable.empty_photo);
-
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onSubItemSelected(holder.mItem.title.substring(0, 6));
-                }
+                // holder.mImgUrl.setImageResource(R.drawable.empty_photo);
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (null != mListener) {
+                            // Notify the active callbacks interface (the activity, if the
+                            // fragment is attached to one) that an item has been selected.
+                            mListener.onSubItemSelected(holder.mItem.title.substring(0, 6));
+                        }
+                    }
+                });
             }
-        });
 
+        }
     }
 
     public boolean isExternalStorageReadable() {
@@ -139,6 +146,7 @@ public class MyCollectionRecyclerViewAdapter extends RecyclerView.Adapter<MyColl
             //mIdView = (TextView) view.findViewById(R.id.id);
             mContentView = (TextView) view.findViewById(R.id.content);
             mImgUrl = (ImageView) view.findViewById(R.id.imgUrl);
+
         }
 
         @Override

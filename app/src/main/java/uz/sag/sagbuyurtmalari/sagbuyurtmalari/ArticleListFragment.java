@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ListFragment;
+import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,8 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
-import java.io.File;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageCache;
@@ -65,7 +63,6 @@ public class ArticleListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(String id);
 
         public void onSubItemSelected(String quality_design);
     }
@@ -75,9 +72,6 @@ public class ArticleListFragment extends ListFragment {
      * nothing. Used only when this fragment is not attached to an activity.
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
-        @Override
-        public void onItemSelected(String id) {
-        }
 
         @Override
         public void onSubItemSelected(String quality_design) {
@@ -113,7 +107,8 @@ public class ArticleListFragment extends ListFragment {
                 android.R.layout.two_line_list_item,  // Specify the row template to use (here, two columns bound to the two retrieved cursor   rows).
                 DatabaseOpenHelper.getInstance(getContext()).getAllQualities(),                                              // Pass in the cursor to bind to.
                 new String[]{"name", "code"},           // Array of cursor columns to bind to.
-                new int[]{android.R.id.text1, android.R.id.text2});
+                new int[]{android.R.id.text1, android.R.id.text2}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+        //@TODO may be memory leaks
         setListAdapter(mAdapter);
 
     }
@@ -134,6 +129,7 @@ public class ArticleListFragment extends ListFragment {
         } else {
             mRecyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+        mRecyclerView.setHasFixedSize(true);
         //recyclerView.setOnScrollListener(new AbsListView.OnScrollListener() {
 //            @Override
 //            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
@@ -153,41 +149,12 @@ public class ArticleListFragment extends ListFragment {
 //                                 int visibleItemCount, int totalItemCount) {
 //            }
 //        });
-        File file = Environment.getExternalStorageDirectory();
-
-        DatabaseOpenHelper.getInstance(getContext()).synchronizeImagesFromGallery(file.getPath() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY);
+//        File file = Environment.getExternalStorageDirectory();
+//
+//        DatabaseOpenHelper.getInstance(getContext()).synchronizeImagesFromGallery(file.getPath() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY);
         mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(), DatabaseOpenHelper.getInstance(getContext()).getImages(
-                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=AC"), mCallbacks));
-        mCallbacks = new Callbacks() {
+                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"AC\""), mCallbacks));
 
-            @Override
-            public void onItemSelected(String id) {
-               // if (mTwoPane) {
-                    // In two-pane mode, show the detail view in this activity by
-                    // adding or replacing the detail fragment using a
-                    // fragment transaction.
-//                    Bundle arguments = new Bundle();
-//                    arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
-//                    ArticleListFragment fragment = new ArticleListFragment();
-//                    fragment.setArguments(arguments);
-//                    getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
-                mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(),
-                        DatabaseOpenHelper.getInstance(getContext()).getImages(
-                                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=" + id), mCallbacks));
-//                } else {
-//                    // In single-pane mode, simply start the detail activity
-//                    // for the selected item ID.
-//                    Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
-//                    detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
-//                    startActivity(detailIntent);
-//                }
-            }
-
-            @Override
-            public void onSubItemSelected(String quality_design) {
-
-            }
-        };
 
     }
 
@@ -222,7 +189,11 @@ public class ArticleListFragment extends ListFragment {
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
         Cursor cursor = (Cursor) mAdapter.getItem(position);
-        mCallbacks.onItemSelected(cursor.getString(1));
+
+        mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(),
+                DatabaseOpenHelper.getInstance(getContext()).getImages(
+                        DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + cursor.getString(2) + "\""), mCallbacks));
+
     }
 
     @Override
