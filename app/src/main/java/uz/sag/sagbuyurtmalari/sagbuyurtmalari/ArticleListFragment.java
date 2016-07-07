@@ -1,15 +1,10 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
-import android.app.Activity;
-import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +13,8 @@ import android.widget.ListView;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageCache;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.util.ImageFetcher;
+
+//import uz.sag.sagbuyurtmalari.sagbuyurtmalari.model.Order;
 
 
 public class ArticleListFragment extends ListFragment {
@@ -37,48 +34,20 @@ public class ArticleListFragment extends ListFragment {
      * The fragment's current callback object, which is notified of list item
      * clicks.
      */
-    private Callbacks mCallbacks = sDummyCallbacks;
+
 
     /**
      * The current activated item position. Only used on tablets.
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
-    private int mColumnCount = 4;
-
-
     private int mImageThumbSize;
     private int mImageThumbSpacing;
     private ImageFetcher mImageFetcher;
     private SimpleCursorAdapter mAdapter;
 
-    private RecyclerView mRecyclerView;
-   // private Callbacks.onS mListener;
-    /**
-     * A callback interface that all activities containing this fragment must
-     * implement. This mechanism allows activities to be notified of item
-     * selections.
-     */
-    public interface Callbacks {
-        /**
-         * Callback for when an item has been selected.
-         */
+    //private RecyclerView mRecyclerView;
 
-        public void onSubItemSelected(String quality_design);
-    }
-
-    /**
-     * A dummy implementation of the {@link Callbacks} interface that does
-     * nothing. Used only when this fragment is not attached to an activity.
-     */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
-
-        @Override
-        public void onSubItemSelected(String quality_design) {
-
-
-        }
-    };
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes).
@@ -89,6 +58,8 @@ public class ArticleListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //INIT CURRENT ORDER with id{OrderItem}
+        //Order.CART_ITEM = new Order.OrderItem(DatabaseOpenHelper.getInstance(getContext()).getLastOrderId()+1);
 
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
         mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
@@ -120,16 +91,14 @@ public class ArticleListFragment extends ListFragment {
         if (savedInstanceState != null && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
-        Context context = view.getContext();
 
-
-        mRecyclerView = (RecyclerView) getView().findViewById(R.id.article_list);
-        if (mColumnCount <= 1) {
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-        } else {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-        }
-        mRecyclerView.setHasFixedSize(true);
+//        mRecyclerView = (RecyclerView) getView().findViewById(R.id.article_list);
+//        if (mColumnCount <= 1) {
+//            mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+//        } else {
+//            mRecyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+//        }
+        // mRecyclerView.setHasFixedSize(true);
         //recyclerView.setOnScrollListener(new AbsListView.OnScrollListener() {
 //            @Override
 //            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
@@ -149,38 +118,27 @@ public class ArticleListFragment extends ListFragment {
 //                                 int visibleItemCount, int totalItemCount) {
 //            }
 //        });
-//        File file = Environment.getExternalStorageDirectory();
-//
-//        DatabaseOpenHelper.getInstance(getContext()).synchronizeImagesFromGallery(file.getPath() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY);
-        mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(), DatabaseOpenHelper.getInstance(getContext()).getImages(
-                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"AC\""), mCallbacks));
+
 
 
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        // Activities containing this fragment must implement its callbacks.
-        if (!(activity instanceof Callbacks)) {
-            throw new IllegalStateException("Activity must implement fragment's callbacks.");
-        }
-        mCallbacks = (Callbacks) activity;
-    }
+//    @Override
+//    public void onAttach(Activity activity) {
+//        super.onAttach(activity);
+//        // Activities containing this fragment must implement its callbacks.
+//        if (!(activity instanceof Callbacks)) {
+//            throw new IllegalStateException("Activity must implement fragment's callbacks.");
+//        }
+//        mCallbacks = (Callbacks) activity;
+//    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        // Reset the active callbacks interface to the dummy implementation.
-        mCallbacks = sDummyCallbacks;
-        // DatabaseOpenHelper.getInstance(getContext()).close();
-        mRecyclerView = null;
-    }
+
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
@@ -189,10 +147,9 @@ public class ArticleListFragment extends ListFragment {
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
         Cursor cursor = (Cursor) mAdapter.getItem(position);
-
-        mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(),
+        MainActivity.mDetailsFragment.mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(),
                 DatabaseOpenHelper.getInstance(getContext()).getImages(
-                        DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + cursor.getString(2) + "\""), mCallbacks));
+                        DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + cursor.getString(2) + "\""), MainActivity.mDetailsFragment.mCallbacks));
 
     }
 

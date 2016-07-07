@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
@@ -47,24 +46,59 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
     private Drawable mBitmap;
     private View.OnTouchListener mTouchListener;
 
-    int imageSwitcherImages[] = {R.drawable.gilam1, R.drawable.gilam2, R.drawable.gilam3 };
+    private String mCond;
+    public static ArrayAdapter<String> listAdapter;
 
-    int switcherImage = imageSwitcherImages.length;
+    // int imageSwitcherImages[] = {R.drawable.gilam1, R.drawable.gilam2, R.drawable.gilam3 };
+
+    //  int switcherImage = imageSwitcherImages.length;
     int counter = 0;
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
+    public void onDialogPositiveClick(AddRugDialog dialog) {
         //String myContent = DatabaseOpenHelper.getInstance(getBaseContext()).
         //  OrderColourSize
-        //@TODO continue from here
-        //get attributes from dialog (var) and get ids from appropriate tables
-        // creat new ColorSizeItem from data taken and add it into the OrderColorSize static CART var
+        String width = dialog.getWidthValue();
+        String height = dialog.getHeightValue();
+        int quantity = Integer.parseInt(dialog.getQuantityValue());
+        boolean finishing = dialog.getFinishingValue();
+        DatabaseOpenHelper dbhelper = DatabaseOpenHelper.getInstance(this.getBaseContext());
+        int sizeId = dbhelper.getSizeId(width, height, finishing);
+
+        if (sizeId != -1) {
+            //record found
+            int rugcolourId = dbhelper.getRugcolourId(mCursor.getString(2), mCursor.getString(3), mCursor.getString(4));
+            String sizeName = dbhelper.getSizeNameById(sizeId);
+            if (rugcolourId != -1) {
+                String colorName = dbhelper.getColorNameById(rugcolourId);
+                String quantityName = String.valueOf(quantity) + " units";
+                String listitem = colorName + " " + sizeName + " R " + quantityName;
+                if (finishing)
+                    listitem = colorName + " " + sizeName + " O " + quantityName;
+
+
+                OrderColourSize.addItem(new OrderColourSize.ColourSizeItem(sizeId, rugcolourId, 1, quantity, listitem),
+                        listitem,
+                        mCond);
+                mRugListView.refreshDrawableState();
+            } else {
+                Snackbar.make(mRugListView, "Color was not found", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        } else {
+            Snackbar.make(mRugListView, "Size was not found", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
+
+
+        // get attributes from dialog (var) and get ids from appropriate tables
+        // create new ColorSizeItem from data taken and add it into the OrderColorSize static CART var
         // don't forget to to fill item's content field with human readable BEJ/RED 340x300 R record
         // create orderqualitydesign at the same time
     }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
+    public void onDialogNegativeClick(AddRugDialog dialog) {
 
     }
 
@@ -74,24 +108,29 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
         setContentView(R.layout.activity_article_detail);
 
         Intent intent = getIntent();
-        String cond = intent.getStringExtra(ARG_QUALITY_DESIGN);
+        mCond = intent.getStringExtra(ARG_QUALITY_DESIGN);
 
-        cond = DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\'" + cond.substring(0, 2) + "\' " + "AND " + DatabaseOpenHelper.GALLERY_TABLE_FIELDS[2] + "=\'" + cond.substring(2) + "\' ";
+        //fill in order article and quality
+        //OrderQualityDesign.
+
+        String cond = DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\'" + mCond.substring(0, 2) + "\' " + "AND " + DatabaseOpenHelper.GALLERY_TABLE_FIELDS[2] + "=\'" + mCond.substring(2) + "\' ";
         mCursor = DatabaseOpenHelper.getInstance(getBaseContext()).getImagesCursor(cond);
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+        toolbar.setTitle(mCond);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent detailIntent = new Intent(getBaseContext(), OrderDetailActivity.class);
+//                detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, "-1");
+//                startActivity(detailIntent);
+//            }
+//        });
 
         final Button addRugBtn = (Button) findViewById(R.id.addrug);
 
@@ -109,10 +148,21 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
         }
         //Set order characteristics panel
         mRugListView = (ListView) findViewById(R.id.characs_of_design);
-        mRugListView.setAdapter(new ArrayAdapter<OrderColourSize.ColourSizeItem>(getBaseContext(),
+        //Clear size and colors of current quality and design
+        OrderColourSize.CART_SUB_ITEMS.clear();
+        //and fill with data from the common map
+        if (OrderColourSize.CART_ITEM_MAP.containsKey(mCond))
+            for (OrderColourSize.ColourSizeItem item : OrderColourSize.CART_ITEM_MAP.get(mCond)) {
+                String phone = item.content;
+
+                OrderColourSize.CART_SUB_ITEMS.add(phone);
+            }
+
+        listAdapter = new ArrayAdapter<String>(getBaseContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
-                OrderColourSize.CART_ITEMS));
+                OrderColourSize.CART_SUB_ITEMS);
+        mRugListView.setAdapter(listAdapter);
 
         mTouchListener = new View.OnTouchListener() {
             @Override

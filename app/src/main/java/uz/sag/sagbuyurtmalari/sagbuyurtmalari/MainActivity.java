@@ -6,13 +6,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -22,12 +20,15 @@ import android.view.View;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ArticleListFragment.Callbacks,
+        implements NavigationView.OnNavigationItemSelectedListener, DetailsFragment.Callbacks,
         OrderListFragment.Callbacks {
 
 
     private boolean mTwoPane;
-    private RecyclerView mRecyclerView;
+    //  private RecyclerView mRecyclerView;
+    private static OrderListFragment mOrderFragment;
+    private static ArticleListFragment mArticleFragment;
+    public static DetailsFragment mDetailsFragment;
 
     @Override
     protected void onDestroy() {
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         //INIT DATABASE
+
         //initializeDBHelper();
 
 //        try
@@ -71,8 +73,9 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                onOrderItemSelected("-1");
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
             }
         });
 
@@ -84,20 +87,15 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        mRecyclerView = (RecyclerView) findViewById(R.id.article_list);
 
-        if (mRecyclerView != null) {
-//            // The detail container view will be present only in the
-//            // large-screen layouts (res/values-large and
-//            // res/values-sw600dp). If this view is present, then the
-//            // activity should be in two-pane mode.
-            mTwoPane = true;
-//
-//            // In two-pane mode, list items should be given the
-//            // 'activated' state when touched.
+        mOrderFragment = new OrderListFragment();
+        mArticleFragment = new ArticleListFragment();
+        mDetailsFragment = new DetailsFragment();
+        //mRecyclerView = (RecyclerView) findViewById(R.id.article_list);
 
-            ((ArticleListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment)).setActivateOnItemClick(true);
-        }
+        getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment, mArticleFragment).commit();
+
 
     }
 
@@ -146,28 +144,31 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {//Catalog
+            //mRecyclerView.setVisibility(View.VISIBLE);
             // Handle the camera action
             Bundle arguments = new Bundle();
-            //  arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
-            ArticleListFragment fragment = new ArticleListFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction().replace(R.id.article_detail_container, fragment).commit();
-            mRecyclerView.setVisibility(View.VISIBLE);
+            // Arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
+            mArticleFragment.setArguments(arguments);
+            getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment, mArticleFragment).commit();
+
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) { //Orders
             // fragment transaction.
+
+            //mRecyclerView.setVisibility(View.GONE);
             Bundle arguments = new Bundle();
             //arguments.putString(OrderListFragment.ARG_ITEM_ID, id);
-            OrderListFragment fragment = new OrderListFragment();
-            fragment.setArguments(arguments);
+            mOrderFragment.setArguments(arguments);
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment, fragment);
+            transaction.remove(mDetailsFragment);
+            transaction.replace(R.id.fragment, mOrderFragment);
             // transaction.addToBackStack(null);
             transaction.commit();
-            mRecyclerView.setVisibility(View.GONE);
+
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {

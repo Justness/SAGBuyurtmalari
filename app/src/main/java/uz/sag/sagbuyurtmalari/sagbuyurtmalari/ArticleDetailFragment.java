@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 
 /**
@@ -21,7 +20,7 @@ public class ArticleDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_ITEM_ID = "order_item_id";
 
     /**
      * The dummy content this fragment is presenting.

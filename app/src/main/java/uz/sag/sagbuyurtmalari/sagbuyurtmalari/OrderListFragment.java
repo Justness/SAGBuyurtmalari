@@ -1,6 +1,7 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
@@ -72,16 +73,24 @@ public class OrderListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Cursor cursor = DatabaseOpenHelper.getInstance(getContext()).getAllOrders();
 
+//        SimpleDateFormat dateFormat = new SimpleDateFormat(
+//                "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTimeInMillis(milliSeconds);
+
+        if (cursor != null) {
         mAdapter = new SimpleCursorAdapter(
                 getContext(), // Context.
                 android.R.layout.two_line_list_item,  // Specify the row template to use (here, two columns bound to the two retrieved cursor   rows).
-                DatabaseOpenHelper.getInstance(getContext()).getAllOrders(),                                              // Pass in the cursor to bind to.
-                new String[]{"orderdata" + "totalquantity",
-                        "totalarea" + "status"},           // Array of cursor columns to bind to.
+                cursor,                                              // Pass in the cursor to bind to.
+                new String[]{"orderdate",
+                        "totalarea"},           // Array of cursor columns to bind to.
                 new int[]{android.R.id.text1, android.R.id.text2}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         //@TODO may be memory leaks
         setListAdapter(mAdapter);
+        }
 //        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
 //                android.R.layout.simple_list_item_activated_1,
 //                android.R.id.text1,

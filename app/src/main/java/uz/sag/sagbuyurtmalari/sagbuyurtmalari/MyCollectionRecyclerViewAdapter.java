@@ -37,12 +37,12 @@ public class MyCollectionRecyclerViewAdapter extends RecyclerView.Adapter<MyColl
 
     private List<Miniature> mValues;
     private int mSize;
-    private final ArticleListFragment.Callbacks mListener;
+    private final DetailsFragment.Callbacks mListener;
 
     private Context mContext;
     private ImageFetcher mImageFetcher;
 
-    public MyCollectionRecyclerViewAdapter(Context context, List<Miniature> miniatures, ArticleListFragment.Callbacks listener) {
+    public MyCollectionRecyclerViewAdapter(Context context, List<Miniature> miniatures, DetailsFragment.Callbacks listener) {
         mValues = miniatures;
         mListener = listener;
         // mImageFetcher = imageFetcher;

@@ -3,44 +3,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="2dp"
+    android:paddingLeft="2dp"
+    android:paddingRight="2dp"
+    android:paddingTop="8dp"
     android:orientation="horizontal"
     tools:context="uz.sag.sagbuyurtmalari.sagbuyurtmalari.ArticleDetailActivity"
     tools:showIn="@layout/app_bar_detail">
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_marginTop="@dimen/app_bar_height"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="2">
 
         <ImageSwitcher
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/app_bar_height"
             android:id="@+id/imageSwitcher"
             android:layout_weight="0.9" />
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
 
             <Button
                 style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:text="&lt;"
                 android:id="@+id/prevImg" />
 
             <Button
                 style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:text=">"
                 android:id="@+id/nextImg" />
         </LinearLayout>
@@ -48,17 +50,18 @@
 
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="10"
-        android:orientation="vertical">
+        android:layout_marginTop="@dimen/app_bar_height"
+        android:paddingTop="8dp"
+        android:orientation="vertical"
+        android:layout_weight="1">
 
         <ListView
             android:id="@+id/characs_of_design"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawSelectorOnTop="false"
-            android:layout_marginTop="@dimen/app_bar_height"
             android:layout_weight="0.8" />
 
         <Button
@@ -70,7 +73,6 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
             android:id="@+id/resetrug"
             android:text="Reset" />
     </LinearLayout>

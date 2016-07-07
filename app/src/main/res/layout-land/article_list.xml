@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
+    android:paddingTop="8dp"
     android:orientation="horizontal">
 
     <ListView
         android:id="@id/android:list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:drawSelectorOnTop="false"
         android:layout_marginTop="@dimen/app_bar_height"
         android:layout_weight="2" />
 
@@ -23,13 +22,5 @@
         android:text="No data"
         android:layout_marginTop="@dimen/app_bar_height" />
 
-    <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/article_list"
-        android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="@dimen/app_bar_height"
-        app:layoutManager="LinearLayoutManager" />
+
 </LinearLayout>

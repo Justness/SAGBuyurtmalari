@@ -42,6 +42,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="1dp"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/total_square"
             android:id="@+id/textView3" />
@@ -57,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/send_order"
-            android:id="@+id/button2" />
+            android:id="@+id/sendOrder" />
     </LinearLayout>
 
 

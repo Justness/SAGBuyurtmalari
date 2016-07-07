@@ -14,10 +14,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.MyCollectionRecyclerViewAdapter;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.OrderDetailActivity;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.model.OrderColourSize;
 
 /**
  * Created by Sardor on 01.06.2016.
@@ -25,6 +30,10 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.MyCollectionRecyclerViewAdapter;
 public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     private static final String ORDERS_TABLE = "orders";
+    private static final String RUGCOLOUR_TABLE = "rugcolour";
+    private static final String DESIGN_TABLE = "design";
+    private static final String ORDER_QUALITY_DESIGN_TABLE = "orderqualityanddesign";
+    private static final String ORDER_SIZE_COLOR_TABLE = "ordersizeandcolour";
     private static DatabaseOpenHelper sInstance;
 
     //The Android's default system path of your application database.
@@ -43,6 +52,13 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
             "rugcolour_maincolour_id",
             "size_code",
             "url"};
+
+
+    public static final String SIZE_TABLE = "size";
+    public static final String COLOR_TABLE = "rugcolour";
+
+
+
     private static final int GALLERY_IMAGE_URL_LENGTH = 19;
 
 
@@ -327,23 +343,203 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
 
     public Cursor getImagesCursor(String cond) throws SQLException {
+        return this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[0], GALLERY_TABLE_FIELDS[7],
+                GALLERY_TABLE_FIELDS[3], GALLERY_TABLE_FIELDS[4], GALLERY_TABLE_FIELDS[5]}, cond, null, null, null, null, null);
+    }
 
-        return this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[0], GALLERY_TABLE_FIELDS[7]}, cond, null, null, null, null, null);
+    public Cursor getImageParamsById(String id) throws SQLException {
+        return this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[1], GALLERY_TABLE_FIELDS[2],
+                GALLERY_TABLE_FIELDS[3], GALLERY_TABLE_FIELDS[4], GALLERY_TABLE_FIELDS[5], GALLERY_TABLE_FIELDS[6], GALLERY_TABLE_FIELDS[7]}, GALLERY_TABLE_FIELDS[0] + "=" + id, null, null, null, null, null);
     }
 
     public Cursor getAllOrders() {
-        Cursor mCursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"orderdata", "totalquantity",
-                "totalarea", "status"}, null, null, null, null, null);
+        Cursor mCursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"_id", "orderdate", "totalquantity",
+                "totalarea", "status"}, "totalarea > 0", null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
-        }
+            return mCursor;
+        } else return null;
 
-        return mCursor;
     }
 
     public boolean createNewOrder() {
+        ContentValues initialValues = new ContentValues();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(java.lang.System.currentTimeMillis());
 
+        initialValues.put("orderdate", dateFormat.format(calendar.getTime()));
+        initialValues.put("status", "0");
+        initialValues.put("totalarea", String.valueOf(OrderDetailActivity.TOTAL_AREA));
+        initialValues.put("totalquantity", String.valueOf(OrderDetailActivity.TOTAL_QUANTITY));
+        try {
+            long orderId = this.myDataBase.insert(ORDERS_TABLE, null, initialValues);
+            for (String group : OrderColourSize.CART_ITEMS) {
+
+                // заполняем список аттрибутов для каждой группы
+
+                boolean firstRow = true;
+                long qualId = -1;
+                // заполняем список аттрибутов для каждого элемента
+                for (OrderColourSize.ColourSizeItem item : OrderColourSize.CART_ITEM_MAP.get(group)) {
+
+                    //At first add quality and design and get its id
+                    if (firstRow) {
+                        OrderColourSize.QualityDesignItem qual = getQualityItemByName(group, String.valueOf(item.rugcolour_id));
+                        qual.id = orderId;
+                        firstRow = false;
+
+                        ContentValues qualValues = new ContentValues();
+                        qualValues.put("quality_id", qual.quality_id);
+                        qualValues.put("design_id", qual.design_id);
+                        qualValues.put("pallete_id", qual.pallete_id);
+                        qualValues.put("order_id", orderId);
+                        qualId = this.myDataBase.insert(ORDER_QUALITY_DESIGN_TABLE, null, qualValues);
+                    }
+                    //Secondly add color and size in loop
+                    if (qualId != -1) {
+                        ContentValues sizeValues = new ContentValues();
+                        sizeValues.put("size_id", item.size_id);
+                        sizeValues.put("rugcolour_id", item.rugcolour_id);
+                        sizeValues.put("orderqualityanddesign_id", qualId);
+                        sizeValues.put("quantity", item.quantity);
+                        this.myDataBase.insert(ORDER_SIZE_COLOR_TABLE, null, sizeValues);
+                    }
+
+                }
+                // добавляем в коллекцию коллекций
+            }
+        } catch (SQLException e) {
+            return false;
+        }
         return true;
+    }
+
+    public void clearAllOrders() {
+        this.myDataBase.delete(ORDER_SIZE_COLOR_TABLE, null, null);
+        this.myDataBase.delete(ORDER_QUALITY_DESIGN_TABLE, null, null);
+        this.myDataBase.delete(ORDERS_TABLE, null, null);
+        // this.myDataBase.execSQL("ALTER TABLE "+ORDER_SIZE_COLOR_TABLE+" ADD COLUMN quantity INTEGER");
+    }
+
+    public OrderColourSize.QualityDesignItem getQualityItemByName(String qualdes, String rugcolorId) throws SQLException {
+
+        return new OrderColourSize.QualityDesignItem(getQualityIdByName(qualdes.substring(0, 2)), getDesignIdByName(qualdes.substring(2, 6)), getPalleteIdByRugColor(rugcolorId));
+    }
+
+    public String getPalleteIdByRugColor(String id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(RUGCOLOUR_TABLE, new String[]{"pallete_id"}, "_id = " + id, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "-1";
+
+    }
+
+    public String getDesignIdByName(String id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(DESIGN_TABLE, new String[]{"_id"}, "name = \'" + id + "\'", null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "-1";
+
+    }
+
+    public String getQualityIdByName(String id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(QUALITY_TABLE, new String[]{"_id"}, "code = \'" + id + "\'", null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "-1";
+
+    }
+
+
+    //Size functions
+    public int getSizeId(String width, String height, boolean finishing) throws SQLException {
+        String fin;
+        if (finishing) fin = "1";
+        else fin = "0";
+        Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"_id"}, "width = " + width + " AND height = " + height + " AND finishing = " + fin, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        } else return -1;
+    }
+
+    public String getSizeNameById(int id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "";
+    }
+
+    public String getColorNameById(int id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(COLOR_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "";
+    }
+
+    public int getRugcolourId(String pallete, String bgcolor, String mncolor) throws SQLException {
+
+        String cond = String.format("pallete_id = (SELECT _id FROM pallete WHERE pallete.name = \'%s\') AND backgroundcolour_id = %s AND maincolour_id = %s", pallete, bgcolor, mncolor);
+        Cursor cursor = this.myDataBase.query(COLOR_TABLE, new String[]{"_id"}, cond, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        } else return -1;
+    }
+
+    public int getLastOrderId() throws SQLException {
+        Cursor cursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"MAX(_id)"}, null, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        } else return -1;
+    }
+
+    public void fillOrderFromDBtoLocalVars(String orderId) {
+
+
+        DatabaseOpenHelper dbhelper = DatabaseOpenHelper.getInstance(null);
+        String qual = "(SELECT quality.code FROM quality WHERE quality._id = orderqualityanddesign.quality_id) ";
+        String des = "(SELECT design.name FROM design WHERE design._id = orderqualityanddesign.design_id) ";
+
+        Cursor cursorQ = this.myDataBase.rawQuery("SELECT " + qual + " , " + des + ",_id FROM orderqualityanddesign WHERE orderqualityanddesign.order_id = " + orderId, null);//ORDER_QUALITY_DESIGN_TABLE, new String[]{qual,des,"_id"},"order_id="+orderId,null,null,null,null);
+        if (cursorQ.moveToFirst()) {
+            do {
+
+                // OrderDetailActivity.CART_ITEMS.add(cursorQ.getString(0)+cursorQ.getString(1));
+
+                String color = "(SELECT rugcolour.name FROM rugcolour WHERE rugcolour._id = ordersizeandcolour.rugcolour_id) ";
+                String size = "(SELECT size.name FROM size WHERE size._id = ordersizeandcolour.size_id) ";
+                String thquery = "SELECT " + color + "," + size + ",rugcolour_id,quantity,size_id FROM ordersizeandcolour WHERE orderqualityanddesign_id = " + cursorQ.getString(2);
+
+                Cursor cursorC = this.myDataBase.rawQuery(thquery, null);//(ORDER_SIZE_COLOR_TABLE, new String[]{color,size,"rugcolour_id","quantity","size_id"},"orderqualityanddesign_id="+cursorQ.getString(2),null,null,null,null);
+                List<OrderColourSize.ColourSizeItem> sizeList = new ArrayList<OrderColourSize.ColourSizeItem>();
+                if (cursorC.moveToFirst()) {
+                    do {
+                        String sizeName = dbhelper.getSizeNameById(cursorC.getInt(4));
+                        String colorName = dbhelper.getColorNameById(cursorC.getInt(2));
+                        String quantityName = String.valueOf(cursorC.getInt(3)) + " units";
+                        String listitem = colorName + " " + sizeName + " R " + quantityName;
+//                            if (finishing)
+//                                listitem = colorName + " " + sizeName + " O " +quantityName;
+                        //@TODO get finishing type from size id (firstly create method in DatabaseOpenHelper)
+
+
+                        OrderDetailActivity.addItem(new OrderColourSize.ColourSizeItem(cursorC.getInt(4), cursorC.getInt(2), 1, cursorC.getInt(3), listitem), listitem,
+                                cursorQ.getString(0) + cursorQ.getString(1));
+                    } while (cursorC.moveToNext());
+                }
+
+
+            } while (cursorQ.moveToNext());
+        }
+
     }
 
 

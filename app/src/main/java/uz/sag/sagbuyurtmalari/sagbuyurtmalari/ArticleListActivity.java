@@ -3,7 +3,7 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-public class ArticleListActivity extends FragmentActivity implements ArticleListFragment.Callbacks {
+public class ArticleListActivity extends FragmentActivity {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -54,9 +54,9 @@ public class ArticleListActivity extends FragmentActivity implements ArticleList
 //        }
 //    }
 
-    @Override
-    public void onSubItemSelected(String item) {
-
-    }
+//    @Override
+//    public void onSubItemSelected(String item) {
+//
+//    }
 }
 

@@ -14,7 +14,7 @@
         <SeekBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:max="500"
+            android:max="13"
             android:id="@+id/rugwidth"
             android:minWidth="@dimen/slider_width"
             android:layout_weight="10" />
@@ -22,13 +22,14 @@
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
+            android:inputType="none"
             android:ems="10"
             android:id="@+id/widthvalue"
             android:maxLength="3"
             android:maxWidth="@dimen/slider_value_width"
             android:layout_weight="1"
-            android:width="@dimen/slider_value_width" />
+            android:width="@dimen/slider_value_width"
+            android:enabled="false" />
     </LinearLayout>
 
     <LinearLayout
@@ -39,7 +40,7 @@
         <SeekBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:max="2500"
+            android:max="18"
             android:id="@+id/rugheight"
             android:minWidth="@dimen/slider_width"
             android:layout_weight="10" />
@@ -47,13 +48,14 @@
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
+            android:inputType="none"
             android:ems="10"
             android:id="@+id/heightvalue"
             android:maxLength="4"
             android:layout_weight="1"
             android:maxWidth="@dimen/slider_value_width"
-            android:width="@dimen/slider_value_width" />
+            android:width="@dimen/slider_value_width"
+            android:enabled="false" />
     </LinearLayout>
 
     <LinearLayout
@@ -79,14 +81,14 @@
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="none|numberDecimal"
+            android:inputType="none"
             android:ems="10"
             android:id="@+id/quantity"
             android:maxLength="2"
             android:maxWidth="@dimen/slider_value_width"
             android:width="@dimen/slider_value_width"
-            android:editable="false"
-            android:text="0" />
+            android:text="0"
+            android:enabled="false" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -94,14 +96,21 @@
             android:layout_height="wrap_content"
             android:text="+"
             android:id="@+id/quantityplus" />
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/shape"
+            android:textOn="O"
+            android:textOff="R"
+            android:id="@+id/shape"
+            android:gravity="center_horizontal" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_not_standard_sizes"
+            android:id="@+id/checkBox" />
     </LinearLayout>
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/shape"
-        android:textOn="O"
-        android:textOff="R"
-        android:id="@+id/shape"
-        android:gravity="center_horizontal" />
 </LinearLayout>
