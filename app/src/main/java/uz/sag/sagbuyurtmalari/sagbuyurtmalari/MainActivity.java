@@ -1,21 +1,30 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
+import android.Manifest;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+
+import java.io.File;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
@@ -42,6 +51,10 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 45);
         //INIT DATABASE
 
         //initializeDBHelper();
@@ -69,6 +82,7 @@ public class MainActivity extends AppCompatActivity
 
         setSupportActionBar(toolbar);
 
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,15 +102,57 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mOrderFragment = new OrderListFragment();
-        mArticleFragment = new ArticleListFragment();
-        mDetailsFragment = new DetailsFragment();
-        //mRecyclerView = (RecyclerView) findViewById(R.id.article_list);
+        // Get the intent, verify the action and get the query
+        Intent intent = getIntent();
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            //doMySearch(query);
+        }
+    }
 
-        getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment, mArticleFragment).commit();
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the options menu from XML
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
 
 
+        menu.findItem(R.id.action_sync).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                MainActivity.syncRugs();
+                return true;
+            }
+        });
+
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+//                    Snackbar.make(mDetailsFragment.getView(), "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                    mDetailsFragment.filterItemList(mDetailsFragment.getCurrentQuality(), query);
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return true;
+                }
+            });
+        }
+
+        // SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        // Assumes current activity is the searchable activity
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+        return true;
     }
 
     @Override
@@ -109,16 +165,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
 
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.search).getActionView();
-        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+    public static boolean syncRugs() {
+
+        File file = Environment.getExternalStorageDirectory();
+//
+        DatabaseOpenHelper.getInstance(null).synchronizeImagesFromGallery(file.getPath() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY);
         return true;
     }
 
@@ -208,6 +260,28 @@ public class MainActivity extends AppCompatActivity
 //                    detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
 //                    startActivity(detailIntent);
 //                }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mOrderFragment == null)
+            mOrderFragment = new OrderListFragment();
+        if (mArticleFragment == null)
+            mArticleFragment = new ArticleListFragment();
+        if (mDetailsFragment == null)
+            mDetailsFragment = new DetailsFragment();
+
+        //if (getSupportFragmentManager().getFragments().size()==0){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+//        mArticleFragment = new ArticleListFragment();
+//        mDetailsFragment = new DetailsFragment();
+//        //mRecyclerView = (RecyclerView) findViewById(R.id.article_list);
+//
+        transaction.replace(R.id.details, mDetailsFragment);
+        transaction.replace(R.id.fragment, mArticleFragment).commit();
+        //}
+    }
     //}
 
 

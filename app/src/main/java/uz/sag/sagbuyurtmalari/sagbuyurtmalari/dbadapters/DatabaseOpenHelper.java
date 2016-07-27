@@ -193,6 +193,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         if (myDataBase != null)
             myDataBase.close();
 
+        sInstance = null;
         super.close();
 
     }
@@ -257,7 +258,9 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public synchronized boolean synchronizeImagesFromGallery(String path) {
         //String [] list;
+
         File f = new File(path);
+        //boolean b= f.canRead();
         File list[] = f.listFiles();
         // try {
         int s = 0;

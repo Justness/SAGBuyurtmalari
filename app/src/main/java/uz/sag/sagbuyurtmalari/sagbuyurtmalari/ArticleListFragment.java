@@ -36,9 +36,6 @@ public class ArticleListFragment extends ListFragment {
      */
 
 
-    /**
-     * The current activated item position. Only used on tablets.
-     */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
     private int mImageThumbSize;
@@ -47,6 +44,7 @@ public class ArticleListFragment extends ListFragment {
     private SimpleCursorAdapter mAdapter;
 
     //private RecyclerView mRecyclerView;
+
 
 
     /**
@@ -82,11 +80,14 @@ public class ArticleListFragment extends ListFragment {
         //@TODO may be memory leaks
         setListAdapter(mAdapter);
 
+
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        //setActivateOnItemClick(true);
+        setActivatedPosition(0);
         // Restore the previously serialized activated item position.
         if (savedInstanceState != null && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
@@ -147,9 +148,9 @@ public class ArticleListFragment extends ListFragment {
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
         Cursor cursor = (Cursor) mAdapter.getItem(position);
-        MainActivity.mDetailsFragment.mRecyclerView.setAdapter(new MyCollectionRecyclerViewAdapter(getContext(),
-                DatabaseOpenHelper.getInstance(getContext()).getImages(
-                        DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + cursor.getString(2) + "\""), MainActivity.mDetailsFragment.mCallbacks));
+
+        MainActivity.mDetailsFragment.filterItemList(cursor.getString(2));
+        setActivatedPosition(position);
 
     }
 
@@ -184,6 +185,13 @@ public class ArticleListFragment extends ListFragment {
             getListView().setItemChecked(position, true);
         }
         mActivatedPosition = position;
+    }
+
+    /**
+     * The current activated item position. Only used on tablets.
+     */
+    public int getActivatedPosition() {
+        return mActivatedPosition;
     }
 
     //Image adapter
