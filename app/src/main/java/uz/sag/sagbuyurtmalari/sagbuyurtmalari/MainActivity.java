@@ -29,7 +29,7 @@ import java.io.File;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DetailsFragment.Callbacks,
+        implements NavigationView.OnNavigationItemSelectedListener,// DetailsFragment.Callbacks,
         OrderListFragment.Callbacks {
 
 
@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity
     //  private RecyclerView mRecyclerView;
     private static OrderListFragment mOrderFragment;
     private static ArticleListFragment mArticleFragment;
+    private static QualityListFragment mQualityFragment;
     public static DetailsFragment mDetailsFragment;
 
     @Override
@@ -127,6 +128,15 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        menu.findItem(R.id.clearsearch).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                mDetailsFragment.filterItemList(mDetailsFragment.getCurrentQuality());
+                return true;
+            }
+        });
+
         // Get the SearchView and set the searchable configuration
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         MenuItem searchItem = menu.findItem(R.id.search);
@@ -198,11 +208,17 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_camera) {//Catalog
             //mRecyclerView.setVisibility(View.VISIBLE);
             // Handle the camera action
-            Bundle arguments = new Bundle();
             // Arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
-            mArticleFragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment, mArticleFragment).commit();
+
+            Bundle arguments = new Bundle();
+//            Intent intent = new Intent(this,ArticleListActivity.class);
+//            startActivity(intent);
+
+            mQualityFragment.setArguments(arguments);
+
+            //mArticleFragment.setArguments(arguments);
+            //getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment, mQualityFragment).commit();
 
         } else if (id == R.id.nav_gallery) {
 
@@ -215,8 +231,10 @@ public class MainActivity extends AppCompatActivity
             Bundle arguments = new Bundle();
             //arguments.putString(OrderListFragment.ARG_ITEM_ID, id);
             mOrderFragment.setArguments(arguments);
+
+
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.remove(mDetailsFragment);
+            transaction.remove(mQualityFragment);
             transaction.replace(R.id.fragment, mOrderFragment);
             // transaction.addToBackStack(null);
             transaction.commit();
@@ -229,17 +247,18 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 
 
-    @Override
-    public void onSubItemSelected(String quality_design) {
-        Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
-        detailIntent.putExtra(ArticleDetailActivity.ARG_QUALITY_DESIGN, quality_design);//todo
-        startActivity(detailIntent);
-
-    }
+//    @Override
+//    public void onSubItemSelected(String quality_design) {
+//        Intent detailIntent = new Intent(this, ArticleDetailActivity.class);
+//        detailIntent.putExtra(ArticleDetailActivity.ARG_QUALITY_DESIGN, quality_design);//todo
+//        startActivity(detailIntent);
+//
+//    }
 
 //    @Override
 //    public void onItemSelected(String id) {
@@ -266,10 +285,12 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         if (mOrderFragment == null)
             mOrderFragment = new OrderListFragment();
-        if (mArticleFragment == null)
-            mArticleFragment = new ArticleListFragment();
-        if (mDetailsFragment == null)
-            mDetailsFragment = new DetailsFragment();
+        if (mQualityFragment == null)
+            mQualityFragment = new QualityListFragment();
+//        if (mArticleFragment == null)
+//            mArticleFragment = new ArticleListFragment();
+//        if (mDetailsFragment == null)
+//            mDetailsFragment = new DetailsFragment();
 
         //if (getSupportFragmentManager().getFragments().size()==0){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -278,8 +299,10 @@ public class MainActivity extends AppCompatActivity
 //        mDetailsFragment = new DetailsFragment();
 //        //mRecyclerView = (RecyclerView) findViewById(R.id.article_list);
 //
-        transaction.replace(R.id.details, mDetailsFragment);
-        transaction.replace(R.id.fragment, mArticleFragment).commit();
+
+//        transaction.replace(R.id.details, mQualityFragment).commit();
+        transaction.replace(R.id.fragment, mQualityFragment).commit();
+//        transaction.add(R.id.details, mQualityFragment).commit();
         //}
     }
     //}

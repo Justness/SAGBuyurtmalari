@@ -102,24 +102,27 @@ public class DetailsFragment extends Fragment {
 
         // db.clearAllOrders();
         // mCurrentQuality = "AC";
-        mAdapter = new MyCollectionRecyclerViewAdapter(getContext(), db.getImages(
-                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + mCurrentQuality + "\""), mCallbacks);
-        mRecyclerView.setAdapter(mAdapter);
+//        mAdapter = new MyCollectionRecyclerViewAdapter(getContext(), db.getImages(
+//                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + mCurrentQuality + "\""), mCallbacks);
+//        mRecyclerView.setAdapter(mAdapter);
     }
 
     public void filterItemList(String qual) {
-        mCurrentQuality = qual;
-        DatabaseOpenHelper db = DatabaseOpenHelper.getInstance(getContext());
-        mAdapter = new MyCollectionRecyclerViewAdapter(getContext(), db.getImages(
-                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + qual + "\""), mCallbacks);
+//        mCurrentQuality = qual;
+//        DatabaseOpenHelper db = DatabaseOpenHelper.getInstance(getContext());
+//        mAdapter = new MyCollectionRecyclerViewAdapter(getContext(), db.getImages(
+//                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + qual + "\""), mCallbacks);
+//        mRecyclerView.setAdapter(mAdapter);
     }
 
     public void filterItemList(String qual, String des) {
         DatabaseOpenHelper db = DatabaseOpenHelper.getInstance(getContext());
-        mAdapter = new MyCollectionRecyclerViewAdapter(getContext(), db.getImages(
-                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + qual + "\" AND " +
-                        DatabaseOpenHelper.GALLERY_TABLE_FIELDS[2] + "=\"" + des + "\""), mCallbacks);
+//        mAdapter = new MyCollectionRecyclerViewAdapter(getContext(), db.getImages(
+//                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + qual + "\" AND " +
+//                        DatabaseOpenHelper.GALLERY_TABLE_FIELDS[2] + "=\"" + des + "\""), mCallbacks);
+//        mRecyclerView.setAdapter(mAdapter);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

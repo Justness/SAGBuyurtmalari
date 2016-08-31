@@ -8,12 +8,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.SeekBar;
+import android.widget.PopupMenu;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.R;
 
@@ -139,6 +140,8 @@ public class AddRugDialog extends DialogFragment {
         return mFinishingValue;
     }
 
+    Button widthSeek;
+    Button heightSeek;
     private EditText mHeightValue;
     private EditText mQuantityValue;
     private boolean mFinishingValue; // R = False O = TRUE
@@ -216,67 +219,140 @@ public class AddRugDialog extends DialogFragment {
                 if (!mHeightValue.isEnabled()) {
                     mHeightValue.setInputType(InputType.TYPE_CLASS_NUMBER);
                     mHeightValue.setEnabled(true);
+                    mHeightValue.setVisibility(View.VISIBLE);
                     mWidthValue.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    mWidthValue.setVisibility(View.VISIBLE);
                     mWidthValue.setEnabled(true);
+
+                    heightSeek.setVisibility(View.INVISIBLE);
+                    widthSeek.setVisibility(View.INVISIBLE);
                 } else {
                     mHeightValue.setInputType(InputType.TYPE_NULL);
+                    mHeightValue.setVisibility(View.INVISIBLE);
                     mHeightValue.setEnabled(false);
                     mWidthValue.setInputType(InputType.TYPE_NULL);
+                    mWidthValue.setVisibility(View.INVISIBLE);
                     mWidthValue.setEnabled(false);
+
+                    heightSeek.setVisibility(View.VISIBLE);
+                    widthSeek.setVisibility(View.VISIBLE);
                 }
             }
         });
 
-        SeekBar widthSeek = (SeekBar) dialogView.findViewById(R.id.rugwidth);
+
+        widthSeek = (Button) dialogView.findViewById(R.id.rugwidth);
         // widthSeek.setProgress(0);
         //widthSeek.incrementProgressBy(10);
         // mWidthValue.setText(Integer.toString(widthSeek.getProgress()).trim());
 
-        widthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+        widthSeek.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //@TODO count progress from mainSizes progress = DatabaseOpenHelper.getInstance(null).getNearestWidth(progress);
-                //ALSO COMPLETE SAVE/SEND ORDER
+            public void onClick(View view) {
+                PopupMenu popup = new PopupMenu(widthSeek.getContext(), widthSeek);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater().inflate(R.menu.width_options, popup.getMenu());
 
-                mWidthValue.setText(String.valueOf(mainWidths[progress]));
+                //registering popup with OnMenuItemClickListener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        //Toast.makeText(MainActivity.this,"You Clicked : " + item.getTitle(),Toast.LENGTH_SHORT).show();
+                        widthSeek.setText(item.getTitle());
+                        mWidthValue.setText(item.getTitle());
+                        return true;
+                    }
+                });
+
+                popup.show();//showing popup menu
             }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
         });
 
-        SeekBar heightSeek = (SeekBar) dialogView.findViewById(R.id.rugheight);
-        //heightSeek.setProgress(0);
-        //heightSeek.incrementProgressBy(10);
-        //  mHeightValue.setText(Integer.toString(heightSeek.getProgress()).trim());
-        heightSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+//            setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+//
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                //@TODO count progress from mainSizes progress = DatabaseOpenHelper.getInstance(null).getNearestWidth(progress);
+//                //ALSO COMPLETE SAVE/SEND ORDER
+//
+//                mWidthValue.setText(String.valueOf(mainWidths[progress]));
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//        });
+        heightSeek = (Button) dialogView.findViewById(R.id.rugheight);
+        // widthSeek.setProgress(0);
+        //widthSeek.incrementProgressBy(10);
+        // mWidthValue.setText(Integer.toString(widthSeek.getProgress()).trim());
+
+        heightSeek.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            public void onClick(View view) {
+                PopupMenu popup = new PopupMenu(heightSeek.getContext(), heightSeek);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater().inflate(R.menu.height_options, popup.getMenu());
 
-                //progress = DatabaseOpenHelper.getInstance(null).getNearestHeight(progress);
+                //registering popup with OnMenuItemClickListener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        heightSeek.setText(item.getTitle());
+                        mHeightValue.setText(item.getTitle());
+                        //Toast.makeText(MainActivity.this,"You Clicked : " + item.getTitle(),Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                });
 
-                mHeightValue.setText(String.valueOf(mainHeights[progress]));
+                popup.show();//showing popup menu
             }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
         });
+
+//        SeekBar heightSeek = (SeekBar) dialogView.findViewById(R.id.rugheight);
+//        //heightSeek.setProgress(0);
+//        //heightSeek.incrementProgressBy(10);
+//        //  mHeightValue.setText(Integer.toString(heightSeek.getProgress()).trim());
+//        heightSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+//
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//
+//                //progress = DatabaseOpenHelper.getInstance(null).getNearestHeight(progress);
+//
+//                mHeightValue.setText(String.valueOf(mainHeights[progress]));
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//        });
+
+        mHeightValue.setInputType(InputType.TYPE_NULL);
+        mHeightValue.setVisibility(View.INVISIBLE);
+        mHeightValue.setEnabled(false);
+        mWidthValue.setInputType(InputType.TYPE_NULL);
+        mWidthValue.setVisibility(View.INVISIBLE);
+        mWidthValue.setEnabled(false);
+
+        heightSeek.setVisibility(View.VISIBLE);
+        widthSeek.setVisibility(View.VISIBLE);
+
 
         final Button minusBtn = (Button) dialogView.findViewById(R.id.quantityminus);
         final Button plusBtn = (Button) dialogView.findViewById(R.id.quantityplus);
@@ -293,7 +369,7 @@ public class AddRugDialog extends DialogFragment {
             public void onClick(View view) {
                 int intVal = Integer.parseInt(mQuantityValue.getText().toString());
                 if (intVal>1)
-                mQuantityValue.setText( String.valueOf(intVal - 2) );
+                    mQuantityValue.setText(String.valueOf(intVal - 2));
                 else
                     mQuantityValue.setText( "0" );
             }

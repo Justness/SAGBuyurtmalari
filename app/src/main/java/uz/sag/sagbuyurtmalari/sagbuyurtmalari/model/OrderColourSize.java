@@ -67,6 +67,28 @@ public class OrderColourSize {
         ArticleDetailActivity.listAdapter.notifyDataSetChanged();
     }
 
+    public static void clearItem(String qualDes) {
+
+//          m = new HashMap<String, String>();
+//          m.put("groupName", qualDes); // имя компании
+//          GROUP_DATA.add(m);
+//
+//        childDataItem = new ArrayList<Map<String, String>>();
+//
+//        m = new HashMap<String, String>();
+//        m.put("phoneName", name);
+//        childDataItem.add(m);
+//
+//        CHILD_DATA.add(childDataItem);
+
+        CART_SUB_ITEMS.clear();
+        if (CART_ITEM_MAP.containsKey(qualDes)) {
+            CART_ITEM_MAP.get(qualDes).clear();
+
+        }
+        ArticleDetailActivity.listAdapter.notifyDataSetChanged();
+    }
+
 
     private static ColourSizeItem createColourSizeItem(int position) {
         return new ColourSizeItem(position);

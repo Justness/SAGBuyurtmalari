@@ -30,6 +30,7 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.model.OrderColourSize;
 public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     private static final String ORDERS_TABLE = "orders";
+
     private static final String RUGCOLOUR_TABLE = "rugcolour";
     private static final String DESIGN_TABLE = "design";
     private static final String ORDER_QUALITY_DESIGN_TABLE = "orderqualityanddesign";
@@ -41,6 +42,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "sagforandroid.db";
 
     private static final String QUALITY_TABLE = "quality";
+    private static final String CUSTOMER_TABLE = "customer";
     private static final String[] QUALITY_TABLE_FIELDS = {"_id", "name", "code", "density_id"};
 
     public static final String GALLERY_TABLE = "gallery";
@@ -254,6 +256,30 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         //return this.mDb.query(true, DATABASE_TABLE, new String[] { NAME }, null, null, null, null, null, null);
     }
 
+    //GET CURSOR to all qualities
+    public List<MyCollectionRecyclerViewAdapter.Miniature> getAllQualitiesItems() {
+        //Log.v(this.mDb.execSQL("");)
+        // Log.w(TAG,this.myDataBase.toString());
+        //Cursor mCursor;
+        Cursor mCursor = this.myDataBase.query(true, QUALITY_TABLE, new String[]{"_id", "name",
+                "code"}, null, null, null, null, null, null);
+
+
+        List<MyCollectionRecyclerViewAdapter.Miniature> miniatures = new ArrayList<>();
+        if (mCursor.moveToFirst()) {
+            do {
+                miniatures.add(new MyCollectionRecyclerViewAdapter.Miniature(mCursor.getString(0), mCursor.getString(2), mCursor.getString(2) + ".jpg"));
+
+            } while (mCursor.moveToNext());
+        }
+
+
+        return miniatures;
+
+
+        //return this.mDb.query(true, DATABASE_TABLE, new String[] { NAME }, null, null, null, null, null, null);
+    }
+
     //synchronize images
 
     public synchronized boolean synchronizeImagesFromGallery(String path) {
@@ -307,6 +333,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         return this.myDataBase.insert(GALLERY_TABLE, null, initialValues);
     }
+
 
     public void insertImageExecSql(String s, String quality_code, String design_name, String pallete_name, String rugcolour_backgroundcolour_id,
                                    String rugcolour_maincolour_id, String size_code, String url) {
@@ -478,6 +505,19 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         } else return "";
     }
 
+    public String getSizeShapeById(int id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"finishing"}, "_id = " + String.valueOf(id), null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            if (cursor.getInt(0) == 0)
+                return "R";
+            else
+                return "O";
+        } else return "";
+    }
+
+
+
     public String getColorNameById(int id) throws SQLException {
         Cursor cursor = this.myDataBase.query(COLOR_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
         if (cursor != null) {
@@ -496,12 +536,31 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         } else return -1;
     }
 
+    public String getRugcolourCodeFromId(String rugcolour) throws SQLException {
+
+
+        Cursor cursor = this.myDataBase.rawQuery("SELECT backgroundcolour_id, maincolour_id FROM rugcolour WHERE _id = &", new String[]{rugcolour});
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return String.valueOf(cursor.getInt(1)) + String.valueOf(cursor.getInt(0));
+        } else return "";
+    }
+
     public int getLastOrderId() throws SQLException {
         Cursor cursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"MAX(_id)"}, null, null, null, null, null);
         if (cursor != null) {
             cursor.moveToFirst();
             return cursor.getInt(0);
         } else return -1;
+    }
+
+    public int getCustomerIdAuth(String email, String password) throws SQLException {
+        String cond = String.format("email =  \'%s\' AND password = \'%s\' ", email, password);
+        Cursor cursor = this.myDataBase.query(CUSTOMER_TABLE, new String[]{"_id"}, cond, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        } else return 0;
     }
 
     public void fillOrderFromDBtoLocalVars(String orderId) {

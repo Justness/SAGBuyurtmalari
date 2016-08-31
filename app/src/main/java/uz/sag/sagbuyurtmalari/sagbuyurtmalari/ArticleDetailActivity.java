@@ -19,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -45,6 +46,15 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
     private Cursor mCursor;
     private Drawable mBitmap;
     private View.OnTouchListener mTouchListener;
+
+    private ImageButton prevImgBtn;
+    private ImageButton nextImgBtn;
+
+    Animation animationOut;
+    Animation animationIn;
+
+    Animation animationOutRev;
+    Animation animationInRev;
 
     private String mCond;
     public static ArrayAdapter<String> listAdapter;
@@ -133,7 +143,14 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
 //        });
 
         final Button addRugBtn = (Button) findViewById(R.id.addrug);
+        final Button resetRugBtn = (Button) findViewById(R.id.resetrug);
 
+        resetRugBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OrderColourSize.clearItem(mCond);
+            }
+        });
         addRugBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -198,30 +215,55 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
         }
 
 
+        animationOut = AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right);
+        animationIn = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
 
-
-    Animation animationOut = AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right);
-    Animation animationIn = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+        animationOutRev = AnimationUtils.loadAnimation(this, R.animator.slide_out_left);
+        animationInRev = AnimationUtils.loadAnimation(this, R.animator.slide_in_right);
 
     mImageSwitcher.setOutAnimation(animationOut);
     mImageSwitcher.setInAnimation(animationIn);
 
-        Button prevBtn = (Button) findViewById(R.id.prevImg);
-        Button nextBtn = (Button) findViewById(R.id.nextImg);
+//        Button prevBtn = (Button) findViewById(R.id.prevImg);
+//        Button nextBtn = (Button) findViewById(R.id.nextImg);
 
-        prevBtn.setOnClickListener(new View.OnClickListener() {
+//        prevBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                prevImageButton(view);
+//            }
+//        });
+//
+//        nextBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                nextImageButton(view);
+//            }
+//        });
+
+        prevImgBtn = (ImageButton) findViewById(R.id.prevImgButton);
+        nextImgBtn = (ImageButton) findViewById(R.id.nextImgButton);
+
+        prevImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 prevImageButton(view);
             }
         });
+        //prevImgBtn.setImageBitmap();
 
-        nextBtn.setOnClickListener(new View.OnClickListener() {
+        Button nBtn = (Button) findViewById(R.id.buttonNext);
+        Button pBtn = (Button) findViewById(R.id.buttonPrev);
+
+
+        nextImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 nextImageButton(view);
             }
         });
+        //nextImgBtn.setImageBitmap();
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
         // (e.g. when rotating the screen from portrait to landscape).
@@ -243,6 +285,40 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
 //                    .add(R.id.article_detail_container, fragment)
 //                    .commit();
 //        }
+
+        if (mCursor.moveToPrevious()) {
+            prevImgBtn.setVisibility(View.VISIBLE);
+            prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            mCursor.moveToNext();
+        } else {
+            mCursor.moveToFirst();
+            prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            prevImgBtn.setVisibility(View.INVISIBLE);
+        }
+
+        if (mCursor.moveToNext()) {
+            nextImgBtn.setVisibility(View.VISIBLE);
+            nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            mCursor.moveToPrevious();
+        } else {
+            mCursor.moveToLast();
+            nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            nextImgBtn.setVisibility(View.INVISIBLE);
+        }
+
+        nBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nextImageButton(view);
+            }
+        });
+
+        pBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                prevImageButton(view);
+            }
+        });
     }
 
     @Override
@@ -280,28 +356,84 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
 //        counter++;
 //        if (counter == switcherImage)
 //            counter = 0;
-        if (mCursor.moveToNext())
-            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+        boolean cursormove = mCursor.moveToNext();
+        if (cursormove) {
+            mCursor.moveToPrevious();
+            prevImgBtn.setVisibility(View.VISIBLE);
+            prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            mCursor.moveToNext();
+            if (cursormove)
+                mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
 
-        else {
-            mCursor.moveToFirst();
-            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+            else {
+                mCursor.moveToLast();
+//            mCursor.moveToFirst();
+//            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+            }
+            //miniature navigation
+            if (mCursor.moveToNext()) {
+                nextImgBtn.setVisibility(View.VISIBLE);
+                nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+                mCursor.moveToPrevious();
+            } else {
+                mCursor.moveToLast();
+//            mCursor.moveToFirst();
+//            nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+//            mCursor.moveToLast();
+                nextImgBtn.setVisibility(View.INVISIBLE);
+            }
+
+
+            mImageSwitcher.setOutAnimation(animationOutRev);
+            mImageSwitcher.setInAnimation(animationInRev);
+
+            mImageSwitcher.setImageDrawable(mBitmap);
+        } else {
+            mCursor.moveToLast();
+//            mCursor.moveToFirst();
+//            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
         }
-
-        mImageSwitcher.setImageDrawable(mBitmap);
     }
     public void prevImageButton(View view) {
 //        counter--;
 //        if (counter == -1)
 //            counter = switcherImage-1;
-        if (mCursor.moveToPrevious())
-            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+        boolean cursormove = mCursor.moveToPrevious();
+        if (cursormove) {
+            mCursor.moveToNext();
+            nextImgBtn.setVisibility(View.VISIBLE);
+            nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            mCursor.moveToPrevious();
+            if (cursormove) {
+                mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
 
-        else {
-            mCursor.moveToLast();
-            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+            } else {
+                mCursor.moveToFirst();
+//            mCursor.moveToLast();
+//            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+            }
+            //miniature navigation
+            if (mCursor.moveToPrevious()) {
+                prevImgBtn.setVisibility(View.VISIBLE);
+                prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+                mCursor.moveToNext();
+            } else {
+                mCursor.moveToFirst();
+//            mCursor.moveToLast();
+//            prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+//            mCursor.moveToFirst();
+
+                prevImgBtn.setVisibility(View.INVISIBLE);
+            }
+
+            mImageSwitcher.setOutAnimation(animationOut);
+            mImageSwitcher.setInAnimation(animationIn);
+
+            mImageSwitcher.setImageDrawable(mBitmap);
+        } else {
+            mCursor.moveToFirst();
+//            mCursor.moveToLast();
+//            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
         }
-
-        mImageSwitcher.setImageDrawable(mBitmap);
     }
 }

@@ -75,6 +75,7 @@ public class OrderListFragment extends ListFragment {
 
         Cursor cursor = DatabaseOpenHelper.getInstance(getContext()).getAllOrders();
 
+
 //        SimpleDateFormat dateFormat = new SimpleDateFormat(
 //                "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 //        Calendar calendar = Calendar.getInstance();

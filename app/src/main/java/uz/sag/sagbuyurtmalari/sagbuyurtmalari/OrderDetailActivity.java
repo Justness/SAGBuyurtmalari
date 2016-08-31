@@ -2,13 +2,35 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
 import android.app.ExpandableListActivity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatCallback;
+import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SimpleExpandableListAdapter;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,11 +46,32 @@ import uz.sag.sagbuyurtmalari.sagbuyurtmalari.model.OrderColourSize;
  * item details are presented side-by-side with a list of items
  * in a {@link ArticleListActivity}.
  */
-public class OrderDetailActivity extends ExpandableListActivity {
+public class OrderDetailActivity extends ExpandableListActivity implements AppCompatCallback {
+
+//    public String[][] array1 = new String[100][100];
+//    public String[][] array2 = new String[100][100];
+
+    @Override
+    public void onSupportActionModeStarted(ActionMode mode) {
+        //let's leave this empty, for now
+    }
+
+    @Nullable
+    @Override
+    public ActionMode onWindowStartingSupportActionMode(ActionMode.Callback callback) {
+        return null;
+    }
+
+    @Override
+    public void onSupportActionModeFinished(ActionMode mode) {
+        // let's leave this empty, for now
+    }
 
     public static final List<String> CART_SUB_ITEMS = new ArrayList<String>();
 
     public static final Set<String> CART_ITEMS = new HashSet<String>();
+
+    public static final String ORDERS_DIRECTORY = "/sagorders/";
 
     public static int TOTAL_AREA = 1;
 
@@ -37,6 +80,8 @@ public class OrderDetailActivity extends ExpandableListActivity {
     public static final Map<String, List<OrderColourSize.ColourSizeItem>> CART_ITEM_MAP = new HashMap<String, List<OrderColourSize.ColourSizeItem>>();
 
     SimpleExpandableListAdapter seAdapter;
+
+    private AppCompatDelegate delegate;
 
     public static void addItem(OrderColourSize.ColourSizeItem item, String name, String qualDes) {
 
@@ -89,15 +134,61 @@ public class OrderDetailActivity extends ExpandableListActivity {
     private Button mSendOrderBtn;
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.order_menu, menu);
+        menu.findItem(R.id.action_open_xls).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                //CONTINUE FROM HERE
+                //
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                File file = new File(Environment.getExternalStorageDirectory() + ORDERS_DIRECTORY + "test.csv");
+                intent.setDataAndType(Uri.fromFile(file), "text/csv");
+                startActivity(intent);
+
+//                                Snackbar.make(item.getActionView(), "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                return true;
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.order_detail_list);
+        //setContentView(R.layout.order_detail_list);
 
         Intent intent = getIntent();
         String orderId = intent.getStringExtra(ArticleDetailFragment.ARG_ITEM_ID);
 
+
+        //let's create the delegate, passing the activity at both arguments (Activity, AppCompatCallback)
+        delegate = AppCompatDelegate.create(this, this);
+
+        //we need to call the onCreate() of the AppCompatDelegate
+        delegate.onCreate(savedInstanceState);
+
+        //we use the delegate to inflate the layout
+        delegate.setContentView(R.layout.order_detail_list);
+
+        //Finally, let's add the Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.order_detail_toolbar);
         toolbar.setTitle(R.string.title_order_detail);
+        delegate.setSupportActionBar(toolbar);
+
+        ActionBar ab = delegate.getSupportActionBar();
+
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
+
+
+        // MenuBuilder menu = new MenuBuilder(getBaseContext());
+        // getMenuInflater().inflate(R.menu.order_menu,menu);
+        // toolbar.setMenu(menu);
+
 
         mSendOrderBtn = (Button) findViewById(R.id.sendOrder);
         mSendOrderBtn.setOnClickListener(
@@ -105,11 +196,13 @@ public class OrderDetailActivity extends ExpandableListActivity {
                     @Override
                     public void onClick(View view) {
                         if (DatabaseOpenHelper.getInstance(getBaseContext()).createNewOrder()) {
+                            createCSVfile();
                             OrderColourSize.CART_ITEM_MAP.clear();
                             OrderColourSize.CART_ITEMS.clear();
                             OrderColourSize.CART_SUB_ITEMS.clear();
                             finish();
                         }
+
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
                     }
@@ -129,6 +222,166 @@ public class OrderDetailActivity extends ExpandableListActivity {
 
         setListAdapter(seAdapter);
     }
+
+    private void createCSVfile() {
+
+
+        List<String> cartItemsList = new ArrayList(OrderColourSize.CART_ITEMS);
+        Collections.sort(cartItemsList);
+
+
+        // -----------------------start create excel file--------------------------------
+
+        org.apache.poi.ss.usermodel.Workbook wb;
+        DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss");
+        Date date = new Date();
+        String time = dateFormat.format(date);
+
+
+        String fileName = time + ".xls";
+
+        wb = new HSSFWorkbook();
+
+        org.apache.poi.ss.usermodel.Cell c = null;
+
+        org.apache.poi.ss.usermodel.Sheet sheet1 = null;
+        sheet1 = wb.createSheet("myOrder");
+
+
+        //-----------------------------start--------------------------------------
+
+        int lengtSheet = wb.getNumberOfSheets();
+
+        int indexSheet = 0;
+
+        String lastSheetName = "myOrder";
+
+
+        int i = 0; //
+        for (String group : cartItemsList) {
+
+            String sheetNameGroup = group.toString();
+            String design = group.substring(2, 6);
+            String quality = group.substring(0, 2);
+
+            for (OrderColourSize.ColourSizeItem item : OrderColourSize.CART_ITEM_MAP.get(group)) {
+
+                String strSize = DatabaseOpenHelper.getInstance(null).getSizeNameById(item.size_id);
+                String codeSize = String.valueOf(item.size_id);
+
+                String[] entries = strSize.split("x");
+                String width = entries[0];
+                String height = entries[1];
+                String shape = DatabaseOpenHelper.getInstance(null).getSizeShapeById(item.size_id);
+
+                String color = DatabaseOpenHelper.getInstance(null).getColorNameById(item.rugcolour_id);
+                String colorNum = DatabaseOpenHelper.getInstance(null).getRugcolourCodeFromId(String.valueOf(item.rugcolour_id));
+                color = colorNum + " " + color;
+
+                String quantity = String.valueOf(item.quantity);
+
+                if (lastSheetName.equals(quality)) {
+                    Sheet sheet = wb.getSheet(quality);
+
+                    Row row = sheet.createRow(i);
+
+                    Cell cell = null;
+
+                    cell = row.createCell(0);
+                    cell.setCellValue(quality);
+
+                    cell = row.createCell(1);
+                    cell.setCellValue(design);
+
+                    cell = row.createCell(2);
+                    cell.setCellValue(color);
+
+                    cell = row.createCell(3);
+                    cell.setCellValue(shape);
+
+                    cell = row.createCell(4);
+                    cell.setCellValue(codeSize);
+
+                    cell = row.createCell(5);
+                    cell.setCellValue(width);
+
+                    cell = row.createCell(6);
+                    cell.setCellValue(height);
+
+                    cell = row.createCell(7);
+                    cell.setCellValue(quantity);
+
+                    lastSheetName = quality;
+
+                    i++;
+                } else {
+                    i = 0;
+                    Sheet sheet = wb.createSheet(quality);
+
+                    Row row = sheet.createRow(i);
+
+                    Cell cell = null;
+
+                    cell = row.createCell(0);
+                    cell.setCellValue(quality);
+
+                    cell = row.createCell(1);
+                    cell.setCellValue(design);
+
+                    cell = row.createCell(2);
+                    cell.setCellValue(color);
+
+                    cell = row.createCell(3);
+                    cell.setCellValue(shape);
+
+                    cell = row.createCell(4);
+                    cell.setCellValue(codeSize);
+
+                    cell = row.createCell(5);
+                    cell.setCellValue(width);
+
+                    cell = row.createCell(6);
+                    cell.setCellValue(height);
+
+                    cell = row.createCell(7);
+                    cell.setCellValue(quantity);
+
+
+                    lastSheetName = quality;
+                }
+
+            }
+
+        }
+
+        if (wb.getNumberOfSheets() > 0) {
+            wb.removeSheetAt(0);
+        }
+
+        File file = new File(getApplicationContext().getExternalFilesDir(null) + "", fileName);
+        FileOutputStream os = null;
+
+
+        try {
+            os = new FileOutputStream(file);
+            wb.write(os);
+            Log.w("FileUtils", "Writing file" + file);
+        } catch (IOException e) {
+            Log.w("FileUtils", "Error writing " + file, e);
+        } catch (Exception e) {
+            Log.w("FileUtils", "Failed to save file", e);
+        } finally {
+            try {
+                if (null != os)
+                    os.close();
+            } catch (Exception ex) {
+            }
+        }
+        // -----------------------end create excel file--------------------------------
+    }
+
+
+
 
 
     /*
