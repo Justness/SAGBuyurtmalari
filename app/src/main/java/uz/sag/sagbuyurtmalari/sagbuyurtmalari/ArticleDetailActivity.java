@@ -3,6 +3,9 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -44,7 +47,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
     private ImageSwitcher mImageSwitcher;
 
     private Cursor mCursor;
-    private Drawable mBitmap;
+    private Bitmap mBitmap;
     private View.OnTouchListener mTouchListener;
 
     private ImageButton prevImgBtn;
@@ -193,7 +196,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
         if (mCursor != null /*&& isExternalStorageReadable()*/) {
             mCursor.moveToFirst();
             String path = Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1);
-            mBitmap = Drawable.createFromPath(path);
+            mBitmap = BitmapFactory.decodeFile(path);
 
 
             mImageSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
@@ -205,7 +208,8 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
                                                       ActionBar.LayoutParams.MATCH_PARENT
                                               ));
                                               myView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                                              myView.setImageDrawable(mBitmap);
+
+                                              myView.setImageDrawable(new BitmapDrawable(mBitmap));
                                               myView.setOnTouchListener(mTouchListener);
                                               return myView;
                                           }
@@ -360,26 +364,30 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
         if (cursormove) {
             mCursor.moveToPrevious();
             prevImgBtn.setVisibility(View.VISIBLE);
-            prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            prevImgBtn.setImageDrawable(new BitmapDrawable(BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1))));
             mCursor.moveToNext();
             if (cursormove)
-                mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+
+                mBitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
 
             else {
                 mCursor.moveToLast();
-//            mCursor.moveToFirst();
-//            mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+//              mCursor.moveToFirst();
+//              mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
             }
+
+
             //miniature navigation
             if (mCursor.moveToNext()) {
                 nextImgBtn.setVisibility(View.VISIBLE);
-                nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+                nextImgBtn.setImageDrawable(new BitmapDrawable(BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1))));
+
                 mCursor.moveToPrevious();
             } else {
                 mCursor.moveToLast();
-//            mCursor.moveToFirst();
-//            nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
-//            mCursor.moveToLast();
+//              mCursor.moveToFirst();
+//              nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+//              mCursor.moveToLast();
                 nextImgBtn.setVisibility(View.INVISIBLE);
             }
 
@@ -387,7 +395,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
             mImageSwitcher.setOutAnimation(animationOutRev);
             mImageSwitcher.setInAnimation(animationInRev);
 
-            mImageSwitcher.setImageDrawable(mBitmap);
+            mImageSwitcher.setImageDrawable(new BitmapDrawable(mBitmap));
         } else {
             mCursor.moveToLast();
 //            mCursor.moveToFirst();
@@ -402,10 +410,10 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
         if (cursormove) {
             mCursor.moveToNext();
             nextImgBtn.setVisibility(View.VISIBLE);
-            nextImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+            nextImgBtn.setImageDrawable(new BitmapDrawable(BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1))));
             mCursor.moveToPrevious();
             if (cursormove) {
-                mBitmap = Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
+                mBitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1));
 
             } else {
                 mCursor.moveToFirst();
@@ -415,7 +423,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
             //miniature navigation
             if (mCursor.moveToPrevious()) {
                 prevImgBtn.setVisibility(View.VISIBLE);
-                prevImgBtn.setImageDrawable(Drawable.createFromPath(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1)));
+                prevImgBtn.setImageDrawable(new BitmapDrawable(BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + mCursor.getString(1))));
                 mCursor.moveToNext();
             } else {
                 mCursor.moveToFirst();
@@ -429,7 +437,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements AddRugDi
             mImageSwitcher.setOutAnimation(animationOut);
             mImageSwitcher.setInAnimation(animationIn);
 
-            mImageSwitcher.setImageDrawable(mBitmap);
+            mImageSwitcher.setImageDrawable(new BitmapDrawable(mBitmap));
         } else {
             mCursor.moveToFirst();
 //            mCursor.moveToLast();

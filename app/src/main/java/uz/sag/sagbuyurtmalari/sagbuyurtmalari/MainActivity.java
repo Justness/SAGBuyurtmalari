@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity
     private static ArticleListFragment mArticleFragment;
     private static QualityListFragment mQualityFragment;
     public static DetailsFragment mDetailsFragment;
+    public static Registration mRegFragment;
+
+    private int navId = 0;
 
     @Override
     protected void onDestroy() {
@@ -204,6 +207,8 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        if (navId == id) return true;
+        navId = id;
 
         if (id == R.id.nav_camera) {//Catalog
             //mRecyclerView.setVisibility(View.VISIBLE);
@@ -218,10 +223,20 @@ public class MainActivity extends AppCompatActivity
 
             //mArticleFragment.setArguments(arguments);
             //getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
+            //.remove(mQualityFragment)
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment, mQualityFragment).commit();
 
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_gallery) { //Users
+            Bundle arguments = new Bundle();
+            //arguments.putString(OrderListFragment.ARG_ITEM_ID, id);
+            mRegFragment.setArguments(arguments);
 
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            // transaction.remove(mRegFragment);
+            transaction.replace(R.id.fragment, mRegFragment);
+            // transaction.addToBackStack(null);
+            transaction.commit();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) { //Orders
@@ -232,17 +247,19 @@ public class MainActivity extends AppCompatActivity
             //arguments.putString(OrderListFragment.ARG_ITEM_ID, id);
             mOrderFragment.setArguments(arguments);
 
-
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.remove(mQualityFragment);
+            //transaction.remove(mQualityFragment);
+            // transaction.remove(mOrderFragment);
             transaction.replace(R.id.fragment, mOrderFragment);
             // transaction.addToBackStack(null);
             transaction.commit();
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_share) { //News
+            Intent intent = new Intent(this, News.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_send) { //About company
+            Intent intent = new Intent(this, AboutCompany.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -285,6 +302,8 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         if (mOrderFragment == null)
             mOrderFragment = new OrderListFragment();
+        if (mRegFragment == null)
+            mRegFragment = new Registration();
         if (mQualityFragment == null)
             mQualityFragment = new QualityListFragment();
 //        if (mArticleFragment == null)

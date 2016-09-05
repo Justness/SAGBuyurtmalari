@@ -4,7 +4,6 @@ import android.app.ExpandableListActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatCallback;
@@ -17,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.TextView;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -51,6 +51,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
 //    public String[][] array1 = new String[100][100];
 //    public String[][] array2 = new String[100][100];
 
+
     @Override
     public void onSupportActionModeStarted(ActionMode mode) {
         //let's leave this empty, for now
@@ -82,6 +83,8 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
     SimpleExpandableListAdapter seAdapter;
 
     private AppCompatDelegate delegate;
+
+    private TextView mTotalAreaView;
 
     public static void addItem(OrderColourSize.ColourSizeItem item, String name, String qualDes) {
 
@@ -144,8 +147,8 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
                 //
                 Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_VIEW);
-                File file = new File(Environment.getExternalStorageDirectory() + ORDERS_DIRECTORY + "test.csv");
-                intent.setDataAndType(Uri.fromFile(file), "text/csv");
+
+                intent.setDataAndType(Uri.fromFile(createCSVfile()), "application/vnd.ms-excel");
                 startActivity(intent);
 
 //                                Snackbar.make(item.getActionView(), "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -196,7 +199,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
                     @Override
                     public void onClick(View view) {
                         if (DatabaseOpenHelper.getInstance(getBaseContext()).createNewOrder()) {
-                            createCSVfile();
+
                             OrderColourSize.CART_ITEM_MAP.clear();
                             OrderColourSize.CART_ITEMS.clear();
                             OrderColourSize.CART_SUB_ITEMS.clear();
@@ -209,7 +212,9 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
                 }
         );
 
+        mTotalAreaView = (TextView) delegate.findViewById(R.id.totalsquare);
         // preparing list data
+
         if (orderId.equals("-1"))
 
             prepareListData(OrderColourSize.CART_ITEMS, OrderColourSize.CART_ITEM_MAP);
@@ -220,10 +225,11 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
 
         //listAdapter = new SimpleExpandableListAdapter(getBaseContext(), listDataHeader, listDataChild);
 
+
         setListAdapter(seAdapter);
     }
 
-    private void createCSVfile() {
+    private File createCSVfile() {
 
 
         List<String> cartItemsList = new ArrayList(OrderColourSize.CART_ITEMS);
@@ -257,6 +263,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
         String lastSheetName = "myOrder";
 
 
+
         int i = 0; //
         for (String group : cartItemsList) {
 
@@ -279,6 +286,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
                 color = colorNum + " " + color;
 
                 String quantity = String.valueOf(item.quantity);
+
 
                 if (lastSheetName.equals(quality)) {
                     Sheet sheet = wb.getSheet(quality);
@@ -354,6 +362,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
 
         }
 
+
         if (wb.getNumberOfSheets() > 0) {
             wb.removeSheetAt(0);
         }
@@ -377,6 +386,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
             } catch (Exception ex) {
             }
         }
+        return file;
         // -----------------------end create excel file--------------------------------
     }
 
@@ -392,6 +402,9 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
         groupData = new ArrayList<Map<String, String>>();
         childData = new ArrayList<ArrayList<Map<String, String>>>();
 
+        int sarea = 0;
+
+
         for (String group : cartItems) {
             // заполняем список аттрибутов для каждой группы
             m = new HashMap<String, String>();
@@ -402,6 +415,7 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
             // заполняем список аттрибутов для каждого элемента
             for (OrderColourSize.ColourSizeItem item : cartItemMap.get(group)) {
                 String phone = item.content;
+                sarea += DatabaseOpenHelper.getInstance(null).getSizeAreaById(item.size_id) * item.quantity / 10000;
                 m = new HashMap<String, String>();
                 m.put("phoneName", phone); // название телефона
                 childDataItem.add(m);
@@ -410,6 +424,8 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
             childData.add(childDataItem);
         }
 
+        TOTAL_AREA = sarea;
+        mTotalAreaView.setText(String.valueOf(TOTAL_AREA));
         // список аттрибутов групп для чтения
         String groupFrom[] = new String[]{"groupName"};
         // список ID view-элементов, в которые будет помещены аттрибуты групп

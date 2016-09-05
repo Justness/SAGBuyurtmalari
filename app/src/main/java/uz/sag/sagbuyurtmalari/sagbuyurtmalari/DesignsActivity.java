@@ -30,6 +30,7 @@ public class DesignsActivity extends AppCompatActivity {
     private MyCollectionRecyclerViewAdapter mAdapter;
 
     private String mCurrentQuality = "AC";
+    private String mCurrentPallete = "PC";
     private int mColumnCount = 6;
 
     public String getCurrentQuality() {
@@ -97,7 +98,8 @@ public class DesignsActivity extends AppCompatActivity {
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
             //mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
-            mCurrentQuality = getIntent().getStringExtra(QualityListFragment.QUALITY_CODE);
+            mCurrentQuality = intent.getStringExtra(QualityListFragment.QUALITY_CODE);
+            mCurrentPallete = intent.getStringExtra(QualityListFragment.PALLETE_CODE);
         }
         mRecyclerView = (RecyclerView) findViewById(R.id.article_design_list);
         if (mColumnCount <= 1) {
@@ -112,7 +114,7 @@ public class DesignsActivity extends AppCompatActivity {
         // mCurrentQuality = "AC";
 
         mAdapter = new MyCollectionRecyclerViewAdapter(getBaseContext(), db.getImages(
-                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + mCurrentQuality + "\""), mCallbacks);
+                DatabaseOpenHelper.GALLERY_TABLE_FIELDS[1] + "=\"" + mCurrentQuality + "\" AND " + DatabaseOpenHelper.GALLERY_TABLE_FIELDS[3] + " = \"" + mCurrentPallete + "\""), mCallbacks);
         mRecyclerView.setAdapter(mAdapter);
     }
 

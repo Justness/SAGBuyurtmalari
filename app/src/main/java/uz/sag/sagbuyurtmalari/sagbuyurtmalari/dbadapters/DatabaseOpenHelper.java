@@ -20,6 +20,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.Login;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.MyCollectionRecyclerViewAdapter;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.OrderDetailActivity;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.model.OrderColourSize;
@@ -259,16 +260,18 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     //GET CURSOR to all qualities
     public List<MyCollectionRecyclerViewAdapter.Miniature> getAllQualitiesItems() {
         //Log.v(this.mDb.execSQL("");)
-        // Log.w(TAG,this.myDataBase.toString());
+        //Log.w(TAG,this.myDataBase.toString());
         //Cursor mCursor;
-        Cursor mCursor = this.myDataBase.query(true, QUALITY_TABLE, new String[]{"_id", "name",
-                "code"}, null, null, null, null, null, null);
+        Cursor mCursor = this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[1],
+                GALLERY_TABLE_FIELDS[3]}, null, null, null, null, null, null);
 
 
         List<MyCollectionRecyclerViewAdapter.Miniature> miniatures = new ArrayList<>();
+        int s = 0;
         if (mCursor.moveToFirst()) {
             do {
-                miniatures.add(new MyCollectionRecyclerViewAdapter.Miniature(mCursor.getString(0), mCursor.getString(2), mCursor.getString(2) + ".jpg"));
+
+                miniatures.add(new MyCollectionRecyclerViewAdapter.Miniature(mCursor.getString(1), mCursor.getString(0), mCursor.getString(0) + mCursor.getString(1) + ".jpg"));
 
             } while (mCursor.moveToNext());
         }
@@ -385,19 +388,20 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public Cursor getAllOrders() {
         Cursor mCursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"_id", "orderdate", "totalquantity",
                 "totalarea", "status"}, "totalarea > 0", null, null, null, null);
-        if (mCursor != null) {
+        if (mCursor.moveToNext()) {
             mCursor.moveToFirst();
             return mCursor;
         } else return null;
 
     }
 
+
     public boolean createNewOrder() {
         ContentValues initialValues = new ContentValues();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(java.lang.System.currentTimeMillis());
-
+        initialValues.put("_id", getNextId());
         initialValues.put("orderdate", dateFormat.format(calendar.getTime()));
         initialValues.put("status", "0");
         initialValues.put("totalarea", String.valueOf(OrderDetailActivity.TOTAL_AREA));
@@ -459,7 +463,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public String getPalleteIdByRugColor(String id) throws SQLException {
         Cursor cursor = this.myDataBase.query(RUGCOLOUR_TABLE, new String[]{"pallete_id"}, "_id = " + id, null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getString(0);
         } else return "-1";
@@ -468,7 +472,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public String getDesignIdByName(String id) throws SQLException {
         Cursor cursor = this.myDataBase.query(DESIGN_TABLE, new String[]{"_id"}, "name = \'" + id + "\'", null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getString(0);
         } else return "-1";
@@ -477,13 +481,12 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public String getQualityIdByName(String id) throws SQLException {
         Cursor cursor = this.myDataBase.query(QUALITY_TABLE, new String[]{"_id"}, "code = \'" + id + "\'", null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getString(0);
         } else return "-1";
 
     }
-
 
     //Size functions
     public int getSizeId(String width, String height, boolean finishing) throws SQLException {
@@ -491,23 +494,50 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         if (finishing) fin = "1";
         else fin = "0";
         Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"_id"}, "width = " + width + " AND height = " + height + " AND finishing = " + fin, null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getInt(0);
         } else return -1;
     }
 
+    public int getNextId() {
+        final int coef = 1000000;
+        String startStr = String.valueOf(Login.getUserId() * coef);
+        String endStr = String.valueOf((Login.getUserId() + 1) * coef - 1);
+        String cond = "_id < " + endStr + " AND _id >= " + startStr;
+        Cursor cursor = this.myDataBase.query(CUSTOMER_TABLE, new String[]{"_id"}, cond, null, null, null, null);
+        if (cursor.moveToNext()) {
+            cursor.moveToFirst();
+            return Integer.parseInt(cursor.getString(0)) + 1;
+        } else return Login.getUserId() * coef;
+
+    }
+
     public String getSizeNameById(int id) throws SQLException {
         Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getString(0);
         } else return "";
     }
 
+    public int getSizeAreaById(int id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
+        if (cursor.moveToNext()) {
+            cursor.moveToFirst();
+
+            String strSize = cursor.getString(0);
+
+            String[] entries = strSize.split("x");
+            int width = Integer.parseInt(entries[0]);
+            int height = Integer.parseInt(entries[1]);
+            return width * height;
+        } else return 0;
+    }
+
     public String getSizeShapeById(int id) throws SQLException {
         Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"finishing"}, "_id = " + String.valueOf(id), null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             if (cursor.getInt(0) == 0)
                 return "R";
@@ -520,7 +550,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public String getColorNameById(int id) throws SQLException {
         Cursor cursor = this.myDataBase.query(COLOR_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getString(0);
         } else return "";
@@ -530,7 +560,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         String cond = String.format("pallete_id = (SELECT _id FROM pallete WHERE pallete.name = \'%s\') AND backgroundcolour_id = %s AND maincolour_id = %s", pallete, bgcolor, mncolor);
         Cursor cursor = this.myDataBase.query(COLOR_TABLE, new String[]{"_id"}, cond, null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getInt(0);
         } else return -1;
@@ -539,8 +569,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public String getRugcolourCodeFromId(String rugcolour) throws SQLException {
 
 
-        Cursor cursor = this.myDataBase.rawQuery("SELECT backgroundcolour_id, maincolour_id FROM rugcolour WHERE _id = &", new String[]{rugcolour});
-        if (cursor != null) {
+        Cursor cursor = this.myDataBase.rawQuery("SELECT backgroundcolour_id, maincolour_id FROM rugcolour WHERE _id = ?", new String[]{rugcolour});
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return String.valueOf(cursor.getInt(1)) + String.valueOf(cursor.getInt(0));
         } else return "";
@@ -548,7 +578,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public int getLastOrderId() throws SQLException {
         Cursor cursor = this.myDataBase.query(ORDERS_TABLE, new String[]{"MAX(_id)"}, null, null, null, null, null);
-        if (cursor != null) {
+        if (cursor.moveToNext()) {
             cursor.moveToFirst();
             return cursor.getInt(0);
         } else return -1;
@@ -557,8 +587,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public int getCustomerIdAuth(String email, String password) throws SQLException {
         String cond = String.format("email =  \'%s\' AND password = \'%s\' ", email, password);
         Cursor cursor = this.myDataBase.query(CUSTOMER_TABLE, new String[]{"_id"}, cond, null, null, null, null);
-        if (cursor != null) {
-            cursor.moveToFirst();
+        if (cursor.moveToNext()) {
             return cursor.getInt(0);
         } else return 0;
     }
@@ -604,5 +633,115 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     }
 
+    //Ozod
+
+    public void insertCustomer(String name, String email, String password, String performer) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("name", name);
+        contentValues.put("email", email);
+        contentValues.put("password", password);
+        contentValues.put("performer_id", performer);
+        this.myDataBase.insert(CUSTOMER_TABLE, null, contentValues);
+        contentValues.clear();
+    }
+
+    public void readCustomerTable() {
+        Cursor cursor = this.myDataBase.query(CUSTOMER_TABLE, null, null, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            int idIndex = cursor.getColumnIndex("_id");
+            int nameIndex = cursor.getColumnIndex("name");
+            int emailIndex = cursor.getColumnIndex("email");
+            int passwordIndex = cursor.getColumnIndex("password");
+            do {
+                Log.d("mLog", "ID = " + cursor.getInt(idIndex) +
+                        ", name = " + cursor.getString(nameIndex) +
+                        ", email = " + cursor.getString(emailIndex) +
+                        ", passwor = " + cursor.getString(passwordIndex));
+            } while (cursor.moveToNext());
+        } else
+            Log.d("mLog", "0 rows");
+        cursor.close();
+
+    }
+
+    public void updateCustomerTable(String name, String mail, String password, String id) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("name", name);
+        contentValues.put("email", mail);
+        contentValues.put("password", password);
+
+
+        this.myDataBase.update(CUSTOMER_TABLE, contentValues, "_id" + "= ?", new String[]{id});
+        contentValues.clear();
+
+    }
+
+    public void deleteCustomerTable(String id) {
+
+        this.myDataBase.delete(CUSTOMER_TABLE, "_id" + "=" + id, null);
+
+    }
+
+    public Cursor getAllCustomer() {
+        //Log.v(this.mDb.execSQL("");)
+        // Log.w(TAG,this.myDataBase.toString());
+        //Cursor mCursor;
+        Cursor mCursor = this.myDataBase.query(true, CUSTOMER_TABLE, new String[]{"_id", "name",
+                "email", "password"}, null, null, null, null, null, null);
+        if (mCursor.moveToNext()) {
+            mCursor.moveToFirst();
+        }
+
+        return mCursor;
+
+        //return this.mDb.query(true, DATABASE_TABLE, new String[] { NAME }, null, null, null, null, null, null);
+    }
+
+    public String getByIdCustomer(String id) {
+        Cursor cursor = this.myDataBase.query(CUSTOMER_TABLE, null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+
+            do {
+                int idIndex = cursor.getColumnIndex("_id");
+                int nameIndex = cursor.getColumnIndex("name");
+                int emailIndex = cursor.getColumnIndex("email");
+                int passwordIndex = cursor.getColumnIndex("password");
+                int performerIndex = cursor.getColumnIndex("performer_id");
+                String idBase = String.valueOf(cursor.getInt(idIndex));
+                if (id.equals(idBase)) {
+                    return cursor.getInt(idIndex) + "#" + cursor.getString(nameIndex) + "#" + cursor.getString(emailIndex) + "#" + cursor.getString(passwordIndex) + "#" + cursor.getString(performerIndex);
+                }
+            } while (cursor.moveToNext());
+        } else
+            Log.d("mLog", "0 rows");
+        cursor.close();
+        return "";
+    }
+
+    public String getByIdOrderComment(String id) {
+        Cursor cursor = this.myDataBase.query(ORDERS_TABLE, null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+
+            do {
+                int idIndex = cursor.getColumnIndex("_id");
+                int commentsIndex = cursor.getColumnIndex("comments");
+                String idBase = String.valueOf(cursor.getInt(idIndex));
+                if (id.equals(idBase)) {
+                    return cursor.getInt(idIndex) + "#" + cursor.getString(commentsIndex);
+                }
+            } while (cursor.moveToNext());
+        } else
+            Log.d("mLog", "0 rows");
+        cursor.close();
+        return "";
+    }
+
+    public void updateOrderComment(String id, String comments) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("comments", comments);
+        this.myDataBase.update(ORDERS_TABLE, contentValues, "_id" + "= ?", new String[]{id});
+        contentValues.clear();
+    }
 
 }

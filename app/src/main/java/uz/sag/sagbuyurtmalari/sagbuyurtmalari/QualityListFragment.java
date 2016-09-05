@@ -30,7 +30,8 @@ public class QualityListFragment extends Fragment {
      *
      */
     private static final String TAG = "QualityListFragment :";
-    public static final String QUALITY_CODE = "QualityListFragmentQualityCode";
+    public static final String QUALITY_CODE = "QualityListFragmentQualityCodeQuality";
+    public static final String PALLETE_CODE = "QualityListFragmentQualityCodePallete";
     private GridView gridview;
     private ArticleAdapter madapter;
     private Context mContext;
@@ -82,6 +83,7 @@ public class QualityListFragment extends Fragment {
 
                 Intent intent = new Intent(mContext, DesignsActivity.class);
                 intent.putExtra(QUALITY_CODE, madapter.getItem(position));
+                intent.putExtra(PALLETE_CODE, madapter.getItemPallete(position));
                 startActivity(intent);
 //                Toast.makeText(HelloGridView.this, "" + position,
 //                        Toast.LENGTH_SHORT).show();
@@ -257,8 +259,12 @@ public class QualityListFragment extends Fragment {
             return mValues.get(position).title;
         }
 
+        public String getItemPallete(int position) {
+            return mValues.get(position).id;
+        }
+
         public long getItemId(int position) {
-            return Integer.parseInt(mValues.get(position).id);
+            return position;
         }
 
         @Override

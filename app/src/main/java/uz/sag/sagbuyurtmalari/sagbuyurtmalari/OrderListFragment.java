@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
@@ -44,6 +47,12 @@ public class OrderListFragment extends ListFragment {
      */
 
     private SimpleCursorAdapter mAdapter;
+
+
+    final int ADD_COMMENT = 1;
+    final int VIEW_COMMENT = 2;
+    public static String orderId;
+
     public interface Callbacks {
         /**
          * Callback for when an item has been selected.
@@ -82,15 +91,15 @@ public class OrderListFragment extends ListFragment {
 //        calendar.setTimeInMillis(milliSeconds);
 
         if (cursor != null) {
-        mAdapter = new SimpleCursorAdapter(
+            mAdapter = new SimpleCursorAdapter(
                 getContext(), // Context.
                 android.R.layout.two_line_list_item,  // Specify the row template to use (here, two columns bound to the two retrieved cursor   rows).
                 cursor,                                              // Pass in the cursor to bind to.
                 new String[]{"orderdate",
                         "totalarea"},           // Array of cursor columns to bind to.
                 new int[]{android.R.id.text1, android.R.id.text2}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-        //@TODO may be memory leaks
-        setListAdapter(mAdapter);
+            //@TODO may be memory leaks
+            setListAdapter(mAdapter);
         }
 //        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
 //                android.R.layout.simple_list_item_activated_1,
@@ -168,5 +177,50 @@ public class OrderListFragment extends ListFragment {
             getListView().setItemChecked(position, true);
         }
         mActivatedPosition = position;
+    }
+    //Ozod
+
+    public void onActivityCreated(Bundle savedInstanceState) {
+        ListView listView = getListView(); //EX:
+        listView.setTextFilterEnabled(true);
+        registerForContextMenu(listView);
+        super.onActivityCreated(savedInstanceState);
+
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(0, ADD_COMMENT, 0, "Добавить комментарий");
+        menu.add(0, VIEW_COMMENT, 0, "Показать комментарии");
+
+
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        orderId = mAdapter.getCursor().getString(0);
+        if (item.getItemId() == ADD_COMMENT) {
+            MyDialog myDialog = new MyDialog();
+            orderId = mAdapter.getCursor().getString(0);
+            myDialog.show(getFragmentManager(), "comment");
+        } else {
+            String[] arr_com = new String[1];
+            String comment = DatabaseOpenHelper.getInstance(getContext()).getByIdOrderComment(orderId);
+            arr_com = comment.split("#");
+
+            ListView lV = getListView();
+
+            if (arr_com[1].equals("null")) {
+                //Snackbar.make(lV, "Статус неизвестен", Snackbar.LENGTH_LONG);
+                Toast toast = Toast.makeText(getContext(),
+                        "Статус неизвестен", Toast.LENGTH_SHORT);
+                toast.show();
+            } else {
+                Toast toast = Toast.makeText(getContext(),
+                        arr_com[1], Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        }
+        return super.onContextItemSelected(item);
     }
 }
