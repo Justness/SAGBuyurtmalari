@@ -20,7 +20,7 @@ public class MyDialog extends DialogFragment {
         // Get the layout inflater
         final LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        builder.setMessage("Добавить коментарии");
+        builder.setMessage(R.string.add_comment);
         view_comment = inflater.inflate(R.layout.activity_my_dialog, null);
         CheckComment();
         builder.setView(view_comment)
@@ -33,7 +33,7 @@ public class MyDialog extends DialogFragment {
                         }
                     }
                 })
-                .setNegativeButton("Закрить", new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         MyDialog.this.getDialog().cancel();
                     }

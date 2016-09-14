@@ -49,12 +49,12 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                 startActivity(intent);
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(),
-                        "Логин или пароль введены неверно!", Toast.LENGTH_SHORT);
+                        getResources().getString(R.string.login_error), Toast.LENGTH_SHORT);
                 toast.show();
             }
         } else {
             Toast toast = Toast.makeText(getApplicationContext(),
-                    "Логин или пароль введены неверно!", Toast.LENGTH_SHORT);
+                    getResources().getString(R.string.login_error), Toast.LENGTH_SHORT);
             toast.show();
         }
 

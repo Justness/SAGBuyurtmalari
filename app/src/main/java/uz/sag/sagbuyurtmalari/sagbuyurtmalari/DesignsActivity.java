@@ -3,8 +3,8 @@ package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,7 +17,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
+
+import java.util.Locale;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
@@ -63,22 +64,30 @@ public class DesignsActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Locale locale = new Locale(MainActivity.LOCAL);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getResources().updateConfiguration(config,
+                getBaseContext().getResources().getDisplayMetrics());
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.design_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onOrderItemSelected("-1");
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                onOrderItemSelected("-1");
+////                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+////                        .setAction("Action", null).show();
+//            }
+//        });
 
 //        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 //        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -120,7 +129,7 @@ public class DesignsActivity extends AppCompatActivity {
 
 
     public void onOrderItemSelected(String id) {
-        Intent detailIntent = new Intent(this, OrderDetailActivity.class);
+        Intent detailIntent = new Intent(this, OrderDetailsActivity.class);
         detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
         startActivity(detailIntent);
     }
@@ -130,8 +139,16 @@ public class DesignsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the options menu from XML
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
+        inflater.inflate(R.menu.main_search, menu);
 
+        menu.findItem(R.id.cart).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                onOrderItemSelected("-1");
+                return true;
+            }
+        });
 
         menu.findItem(R.id.clearsearch).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 

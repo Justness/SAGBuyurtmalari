@@ -51,7 +51,7 @@ public class Registration extends Fragment implements View.OnClickListener {
 //                password.setText("password");
 
                 Toast toast_add = Toast.makeText(getContext(),
-                        "Новый пользователь успешно добавлен", Toast.LENGTH_SHORT);
+                        getResources().getString(R.string.new_user_added), Toast.LENGTH_SHORT);
                 toast_add.show();
 
                 mAdapter.changeCursor(DatabaseOpenHelper.getInstance(getContext()).getAllCustomer());
@@ -76,7 +76,7 @@ public class Registration extends Fragment implements View.OnClickListener {
 //                password.setText("password");
 
                 Toast toast_update = Toast.makeText(getContext(),
-                        "Пользователь успешно обновлен", Toast.LENGTH_SHORT);
+                        getResources().getString(R.string.new_user_updated), Toast.LENGTH_SHORT);
                 toast_update.show();
                 mAdapter.changeCursor(DatabaseOpenHelper.getInstance(getContext()).getAllCustomer());
                 mAdapter.notifyDataSetChanged();

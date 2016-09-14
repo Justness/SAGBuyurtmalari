@@ -1,30 +1,28 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
+
 import android.Manifest;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
 import java.io.File;
+import java.util.Locale;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
@@ -40,6 +38,7 @@ public class MainActivity extends AppCompatActivity
     private static QualityListFragment mQualityFragment;
     public static DetailsFragment mDetailsFragment;
     public static Registration mRegFragment;
+    public static final String LOCAL = "uz";
 
     private int navId = 0;
 
@@ -47,13 +46,21 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         DatabaseOpenHelper.getInstance(this.getBaseContext()).close();
+
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Locale locale = new Locale(MainActivity.LOCAL);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getResources().updateConfiguration(config,
+                getBaseContext().getResources().getDisplayMetrics());
+
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -87,15 +94,15 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onOrderItemSelected("-1");
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                onOrderItemSelected("-1");
+////                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+////                        .setAction("Action", null).show();
+//            }
+//        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -131,40 +138,50 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        menu.findItem(R.id.clearsearch).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//        menu.findItem(R.id.clearsearch).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                mDetailsFragment.filterItemList(mDetailsFragment.getCurrentQuality());
+//                return true;
+//            }
+//        });
+
+
+        menu.findItem(R.id.cart).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                mDetailsFragment.filterItemList(mDetailsFragment.getCurrentQuality());
+                onOrderItemSelected("-1");
                 return true;
             }
         });
 
         // Get the SearchView and set the searchable configuration
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        MenuItem searchItem = menu.findItem(R.id.search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        if (searchView != null) {
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-//                    Snackbar.make(mDetailsFragment.getView(), "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-                    mDetailsFragment.filterItemList(mDetailsFragment.getCurrentQuality(), query);
-                    return true;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    return true;
-                }
-            });
-        }
+//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        MenuItem searchItem = menu.findItem(R.id.search);
+//        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+//        if (searchView != null) {
+//            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                @Override
+//                public boolean onQueryTextSubmit(String query) {
+////                    Snackbar.make(mDetailsFragment.getView(), "Replace with your own action", Snackbar.LENGTH_LONG)
+////                        .setAction("Action", null).show();
+//                    mDetailsFragment.filterItemList(mDetailsFragment.getCurrentQuality(), query);
+//                    return true;
+//                }
+//
+//                @Override
+//                public boolean onQueryTextChange(String newText) {
+//                    return true;
+//                }
+//            });
+//        }
 
         // SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         // Assumes current activity is the searchable activity
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+//        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
         return true;
     }
 
@@ -215,6 +232,7 @@ public class MainActivity extends AppCompatActivity
             // Handle the camera action
             // Arguments.putString(ArticleDetailFragment.ARG_ITEM_ID, id);
 
+
             Bundle arguments = new Bundle();
 //            Intent intent = new Intent(this,ArticleListActivity.class);
 //            startActivity(intent);
@@ -223,7 +241,7 @@ public class MainActivity extends AppCompatActivity
 
             //mArticleFragment.setArguments(arguments);
             //getSupportFragmentManager().beginTransaction().add(R.id.details, mDetailsFragment).commit();
-            //.remove(mQualityFragment)
+
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment, mQualityFragment).commit();
 
         } else if (id == R.id.nav_gallery) { //Users
@@ -237,8 +255,6 @@ public class MainActivity extends AppCompatActivity
             transaction.replace(R.id.fragment, mRegFragment);
             // transaction.addToBackStack(null);
             transaction.commit();
-        } else if (id == R.id.nav_slideshow) {
-
         } else if (id == R.id.nav_manage) { //Orders
             // fragment transaction.
 
@@ -329,7 +345,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onOrderItemSelected(String id) {
-        Intent detailIntent = new Intent(this, OrderDetailActivity.class);
+        Intent detailIntent = new Intent(this, OrderDetailsActivity.class);
         detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
         startActivity(detailIntent);
     }

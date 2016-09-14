@@ -1,6 +1,7 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
 
@@ -29,6 +31,14 @@ public class ArticleListActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Locale locale = new Locale(MainActivity.LOCAL);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getResources().updateConfiguration(config,
+                getBaseContext().getResources().getDisplayMetrics());
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_article_detail);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
 

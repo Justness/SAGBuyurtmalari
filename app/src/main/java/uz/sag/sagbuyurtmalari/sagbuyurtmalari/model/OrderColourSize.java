@@ -67,6 +67,19 @@ public class OrderColourSize {
         ArticleDetailActivity.listAdapter.notifyDataSetChanged();
     }
 
+    public static void removeItem(CharSequence name, String qualDes) {
+
+        int delId = 0;
+        for (delId = 0; delId < CART_SUB_ITEMS.size(); delId++) {
+            if (CART_SUB_ITEMS.get(delId).equals(name)) {
+                CART_SUB_ITEMS.remove(delId);
+                if (CART_ITEM_MAP.containsKey(qualDes))
+                    CART_ITEM_MAP.get(qualDes).remove(delId);
+            }
+        }
+
+        ArticleDetailActivity.listAdapter.notifyDataSetChanged();
+    }
     public static void clearItem(String qualDes) {
 
 //          m = new HashMap<String, String>();
@@ -102,6 +115,11 @@ public class OrderColourSize {
             builder.append("\nMore details information here.");
         }
         return builder.toString();
+    }
+
+    public static void notifyChange() {
+        if (ArticleDetailActivity.listAdapter != null)
+            ArticleDetailActivity.listAdapter.notifyDataSetChanged();
     }
 
     /**

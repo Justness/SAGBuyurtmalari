@@ -9,6 +9,17 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +34,7 @@ import java.util.Locale;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.Login;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.MyCollectionRecyclerViewAdapter;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.OrderDetailActivity;
+import uz.sag.sagbuyurtmalari.sagbuyurtmalari.OrderDetailsActivity;
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.model.OrderColourSize;
 
 /**
@@ -36,6 +48,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     private static final String DESIGN_TABLE = "design";
     private static final String ORDER_QUALITY_DESIGN_TABLE = "orderqualityanddesign";
     private static final String ORDER_SIZE_COLOR_TABLE = "ordersizeandcolour";
+    private static final String PALLETE_TABLE = "pallete";
     private static DatabaseOpenHelper sInstance;
 
     //The Android's default system path of your application database.
@@ -43,6 +56,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "sagforandroid.db";
 
     private static final String QUALITY_TABLE = "quality";
+    private static final String COLLECTION_TABLE = "collection";
     private static final String CUSTOMER_TABLE = "customer";
     private static final String[] QUALITY_TABLE_FIELDS = {"_id", "name", "code", "density_id"};
 
@@ -401,20 +415,32 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(java.lang.System.currentTimeMillis());
-        initialValues.put("_id", getNextId());
+        //initialValues.put("_id", getNextId()); //@Temp solution
         initialValues.put("orderdate", dateFormat.format(calendar.getTime()));
         initialValues.put("status", "0");
         initialValues.put("totalarea", String.valueOf(OrderDetailActivity.TOTAL_AREA));
         initialValues.put("totalquantity", String.valueOf(OrderDetailActivity.TOTAL_QUANTITY));
+
+        //JSON send to server
+        JSONObject jsObj = new JSONObject();
+
+        JSONArray jsList = new JSONArray();
         try {
             long orderId = this.myDataBase.insert(ORDERS_TABLE, null, initialValues);
+
+            jsObj.putOpt("id", orderId);
+            jsObj.putOpt("date", dateFormat.format(calendar.getTime()));
+
             for (String group : OrderColourSize.CART_ITEMS) {
 
                 // заполняем список аттрибутов для каждой группы
+                String design = group.substring(2, 6);
+                String quality = group.substring(0, 2);
 
                 boolean firstRow = true;
                 long qualId = -1;
                 // заполняем список аттрибутов для каждого элемента
+                String pallete = "PC";
                 for (OrderColourSize.ColourSizeItem item : OrderColourSize.CART_ITEM_MAP.get(group)) {
 
                     //At first add quality and design and get its id
@@ -429,6 +455,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                         qualValues.put("pallete_id", qual.pallete_id);
                         qualValues.put("order_id", orderId);
                         qualId = this.myDataBase.insert(ORDER_QUALITY_DESIGN_TABLE, null, qualValues);
+
+                        pallete = DatabaseOpenHelper.getInstance(null).getPalleteNameById(String.valueOf(qual.pallete_id));
                     }
                     //Secondly add color and size in loop
                     if (qualId != -1) {
@@ -439,13 +467,71 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                         sizeValues.put("quantity", item.quantity);
                         this.myDataBase.insert(ORDER_SIZE_COLOR_TABLE, null, sizeValues);
                     }
+                    /*---------------------------------------*/
+                    JSONObject jsObjLine = new JSONObject();
+
+                    String strSize = DatabaseOpenHelper.getInstance(null).getSizeNameById(item.size_id);
+                    String codeSize = String.valueOf(item.size_id);
+
+
+//                String[] entries = strSize.split("x");
+//                String width = entries[0];
+//                String height = entries[1];
+                    String shape = DatabaseOpenHelper.getInstance(null).getSizeShapeById(item.size_id);
+
+                    String color = DatabaseOpenHelper.getInstance(null).getColorNameById(item.rugcolour_id);
+                    String colorNum = DatabaseOpenHelper.getInstance(null).getRugcolourCodeFromId(String.valueOf(item.rugcolour_id));
+                    color = colorNum + " " + color;
+
+                    String quantity = String.valueOf(item.quantity);
+                    /*---------------------------------------*/
+                    jsObjLine.putOpt("quality", quality);
+                    jsObjLine.putOpt("design", design);
+                    jsObjLine.putOpt("color", color);
+                    jsObjLine.putOpt("pallete", pallete);
+                    jsObjLine.putOpt("color", color);
+                    jsObjLine.putOpt("quantity", quantity);
+                    jsObjLine.putOpt("size", strSize + " " + shape);
+
+                    jsList.put(jsObjLine);
 
                 }
                 // добавляем в коллекцию коллекций
             }
+            jsObj.putOpt("content", jsList);
+
         } catch (SQLException e) {
             return false;
+        } catch (JSONException e2) {
+            return false;
         }
+
+
+        return sendToServer(jsObj, myContext);
+    }
+
+    private boolean sendToServer(JSONObject jsondata, Context context) {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = "http://www.dukon.uz/test.php";
+
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, jsondata,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //mTextView.setText("That didn't work!");
+            }
+        });
+// Add the request to the RequestQueue.
+        queue.add(jsonRequest);
         return true;
     }
 
@@ -467,6 +553,24 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
             cursor.moveToFirst();
             return cursor.getString(0);
         } else return "-1";
+
+    }
+
+    public String getPalleteNameById(String id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(PALLETE_TABLE, new String[]{"name"}, "_id = " + id, null, null, null, null);
+        if (cursor.moveToNext()) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "PC";
+
+    }
+
+    public String getQualityNameByCode(String code) throws SQLException {
+        Cursor cursor = this.myDataBase.query(QUALITY_TABLE, new String[]{"name"}, "code = " + code, null, null, null, null);
+        if (cursor.moveToNext()) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "IMPERIAL";
 
     }
 
@@ -546,6 +650,19 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         } else return "";
     }
 
+    public String getArticleFromQualAndPal(String qualid, String palid) throws SQLException {
+        Cursor cursor = this.myDataBase.query(COLLECTION_TABLE, new String[]{"name"}, "quality_id = " + qualid + " AND pallete_id = " + palid, null, null, null, null);
+        if (cursor.moveToNext()) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else {
+            Cursor cursor2 = this.myDataBase.query(QUALITY_TABLE, new String[]{"name"}, "_id = " + qualid, null, null, null, null);
+            if (cursor2.moveToNext()) {
+                cursor2.moveToFirst();
+                return cursor2.getString(0);
+            } else return "IMPERIAL";
+        }
+    }
 
 
     public String getColorNameById(int id) throws SQLException {
@@ -622,7 +739,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                         //@TODO get finishing type from size id (firstly create method in DatabaseOpenHelper)
 
 
-                        OrderDetailActivity.addItem(new OrderColourSize.ColourSizeItem(cursorC.getInt(4), cursorC.getInt(2), 1, cursorC.getInt(3), listitem), listitem,
+                        OrderDetailsActivity.addItem(new OrderColourSize.ColourSizeItem(cursorC.getInt(4), cursorC.getInt(2), 1, cursorC.getInt(3), listitem), listitem,
                                 cursorQ.getString(0) + cursorQ.getString(1));
                     } while (cursorC.moveToNext());
                 }

@@ -191,8 +191,8 @@ public class OrderListFragment extends ListFragment {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, ADD_COMMENT, 0, "Добавить комментарий");
-        menu.add(0, VIEW_COMMENT, 0, "Показать комментарии");
+        menu.add(0, ADD_COMMENT, 0, getResources().getString(R.string.add_comment));
+        menu.add(0, VIEW_COMMENT, 0, getResources().getString(R.string.show_status));
 
 
     }
@@ -213,7 +213,7 @@ public class OrderListFragment extends ListFragment {
             if (arr_com[1].equals("null")) {
                 //Snackbar.make(lV, "Статус неизвестен", Snackbar.LENGTH_LONG);
                 Toast toast = Toast.makeText(getContext(),
-                        "Статус неизвестен", Toast.LENGTH_SHORT);
+                        getResources().getString(R.string.status_unknown), Toast.LENGTH_SHORT);
                 toast.show();
             } else {
                 Toast toast = Toast.makeText(getContext(),
