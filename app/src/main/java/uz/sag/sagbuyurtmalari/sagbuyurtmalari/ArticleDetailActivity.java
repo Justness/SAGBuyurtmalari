@@ -176,7 +176,7 @@ public class ArticleDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
         colorBtn = (Button) findViewById(R.id.button2);
-        mCursor.moveToFirst();
+        if (mCursor.moveToFirst())
         colorBtn.setText(mCursor.getString(3) + mCursor.getString(4));
         mCursor.moveToPrevious();
         //Set order characteristics panel
@@ -219,9 +219,10 @@ public class ArticleDetailActivity extends AppCompatActivity {
 
         mImageSwitcher = (ImageSwitcher) findViewById(R.id.imageSwitcher);
         if (mCursor != null /*&& isExternalStorageReadable()*/) {
+            //if (mCursor.moveToFirst()) {
             mCursor.moveToFirst();
             String path = Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + mCursor.getString(1);
-
+            //}
 
             // First decode with inJustDecodeBounds=true to check dimensions
             final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -358,6 +359,8 @@ public class ArticleDetailActivity extends AppCompatActivity {
                 prevImageButton(view);
             }
         });
+
+
     }
 
     public static int calculateInSampleSize(
@@ -424,7 +427,7 @@ public class ArticleDetailActivity extends AppCompatActivity {
             String sizeName = dbhelper.getSizeNameById(sizeId);
             if (rugcolourId != -1) {
                 String colorName = dbhelper.getColorNameById(rugcolourId);
-                String quantityName = String.valueOf(quantity) + " units";
+                String quantityName = String.valueOf(quantity) + " шт.";
                 String listitem = colorName + " " + sizeName + " R " + quantityName;
                 if (finishing)
                     listitem = colorName + " " + sizeName + " O " + quantityName;

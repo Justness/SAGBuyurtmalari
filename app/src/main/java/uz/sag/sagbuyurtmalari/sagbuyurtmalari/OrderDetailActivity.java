@@ -198,13 +198,13 @@ public class OrderDetailActivity extends ExpandableListActivity implements AppCo
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (DatabaseOpenHelper.getInstance(getBaseContext()).createNewOrder()) {
-
-                            OrderColourSize.CART_ITEM_MAP.clear();
-                            OrderColourSize.CART_ITEMS.clear();
-                            OrderColourSize.CART_SUB_ITEMS.clear();
-                            finish();
-                        }
+//                        if (DatabaseOpenHelper.getInstance(getBaseContext()).createNewOrder()) {
+//
+//                            OrderColourSize.CART_ITEM_MAP.clear();
+//                            OrderColourSize.CART_ITEMS.clear();
+//                            OrderColourSize.CART_SUB_ITEMS.clear();
+//                            finish();
+//                        }
 
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();

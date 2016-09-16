@@ -82,6 +82,7 @@ public class OrderListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        DatabaseOpenHelper.getInstance(null).receiveCommentFromServer();
         Cursor cursor = DatabaseOpenHelper.getInstance(getContext()).getAllOrders();
 
 
@@ -191,7 +192,9 @@ public class OrderListFragment extends ListFragment {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, ADD_COMMENT, 0, getResources().getString(R.string.add_comment));
+        if (Login.getUserId() == 1)
+            menu.add(0, ADD_COMMENT, 0, getResources().getString(R.string.add_comment));
+
         menu.add(0, VIEW_COMMENT, 0, getResources().getString(R.string.show_status));
 
 
@@ -203,6 +206,7 @@ public class OrderListFragment extends ListFragment {
             MyDialog myDialog = new MyDialog();
             orderId = mAdapter.getCursor().getString(0);
             myDialog.show(getFragmentManager(), "comment");
+//TODO
         } else {
             String[] arr_com = new String[1];
             String comment = DatabaseOpenHelper.getInstance(getContext()).getByIdOrderComment(orderId);

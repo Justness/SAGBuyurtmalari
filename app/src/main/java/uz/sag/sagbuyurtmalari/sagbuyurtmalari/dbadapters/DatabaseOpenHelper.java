@@ -7,6 +7,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -14,17 +15,21 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -299,8 +304,10 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     //synchronize images
 
-    public synchronized boolean synchronizeImagesFromGallery(String path) {
+    public synchronized boolean synchronizeImagesFromGallery() {
         //String [] list;
+        File file22 = Environment.getExternalStorageDirectory();
+        String path = file22.getPath() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY;
 
         File f = new File(path);
         //boolean b= f.canRead();
@@ -410,12 +417,13 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     }
 
 
-    public boolean createNewOrder() {
+    public JSONObject createNewOrder() {
         ContentValues initialValues = new ContentValues();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(java.lang.System.currentTimeMillis());
-        //initialValues.put("_id", getNextId()); //@Temp solution
+        int newId = getNextId();
+        initialValues.put("_id", newId); //@Todo solution
         initialValues.put("orderdate", dateFormat.format(calendar.getTime()));
         initialValues.put("status", "0");
         initialValues.put("totalarea", String.valueOf(OrderDetailActivity.TOTAL_AREA));
@@ -428,8 +436,9 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         try {
             long orderId = this.myDataBase.insert(ORDERS_TABLE, null, initialValues);
 
-            jsObj.putOpt("id", orderId);
-            jsObj.putOpt("date", dateFormat.format(calendar.getTime()));
+            jsObj.putOpt("id", newId);
+            jsObj.putOpt("client", Login.getUserId());
+            jsObj.putOpt("mydate", dateFormat.format(calendar.getTime()));
 
             for (String group : OrderColourSize.CART_ITEMS) {
 
@@ -471,12 +480,12 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                     JSONObject jsObjLine = new JSONObject();
 
                     String strSize = DatabaseOpenHelper.getInstance(null).getSizeNameById(item.size_id);
-                    String codeSize = String.valueOf(item.size_id);
+                    String codeSize = DatabaseOpenHelper.getInstance(null).getSizeCodeById(item.size_id);
 
 
-//                String[] entries = strSize.split("x");
-//                String width = entries[0];
-//                String height = entries[1];
+                    String[] entries = strSize.split("x");
+                    String width = entries[0];
+                    String height = entries[1];
                     String shape = DatabaseOpenHelper.getInstance(null).getSizeShapeById(item.size_id);
 
                     String color = DatabaseOpenHelper.getInstance(null).getColorNameById(item.rugcolour_id);
@@ -491,7 +500,10 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                     jsObjLine.putOpt("pallete", pallete);
                     jsObjLine.putOpt("color", color);
                     jsObjLine.putOpt("quantity", quantity);
-                    jsObjLine.putOpt("size", strSize + " " + shape);
+                    jsObjLine.putOpt("size_code", codeSize);
+                    jsObjLine.putOpt("width", width);
+                    jsObjLine.putOpt("height", height);
+                    jsObjLine.putOpt("shape", shape);
 
                     jsList.put(jsObjLine);
 
@@ -501,39 +513,16 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
             jsObj.putOpt("content", jsList);
 
         } catch (SQLException e) {
-            return false;
+            return null;
         } catch (JSONException e2) {
-            return false;
+            return null;
         }
 
 
-        return sendToServer(jsObj, myContext);
+        return jsObj;
     }
 
-    private boolean sendToServer(JSONObject jsondata, Context context) {
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(context);
-        String url = "http://www.dukon.uz/test.php";
 
-
-        // Request a string response from the provided URL.
-        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, jsondata,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // Display the first 500 characters of the response string.
-
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //mTextView.setText("That didn't work!");
-            }
-        });
-// Add the request to the RequestQueue.
-        queue.add(jsonRequest);
-        return true;
-    }
 
     public void clearAllOrders() {
         this.myDataBase.delete(ORDER_SIZE_COLOR_TABLE, null, null);
@@ -625,6 +614,14 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         } else return "";
     }
 
+    public String getSizeCodeById(int id) throws SQLException {
+        Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"code"}, "_id = " + String.valueOf(id), null, null, null, null);
+        if (cursor.moveToNext()) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else return "";
+    }
+
     public int getSizeAreaById(int id) throws SQLException {
         Cursor cursor = this.myDataBase.query(SIZE_TABLE, new String[]{"name"}, "_id = " + String.valueOf(id), null, null, null, null);
         if (cursor.moveToNext()) {
@@ -702,6 +699,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     }
 
     public int getCustomerIdAuth(String email, String password) throws SQLException {
+
         String cond = String.format("email =  \'%s\' AND password = \'%s\' ", email, password);
         Cursor cursor = this.myDataBase.query(CUSTOMER_TABLE, new String[]{"_id"}, cond, null, null, null, null);
         if (cursor.moveToNext()) {
@@ -860,5 +858,172 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         this.myDataBase.update(ORDERS_TABLE, contentValues, "_id" + "= ?", new String[]{id});
         contentValues.clear();
     }
+
+    //SYNC images
+    private JSONObject getAllImageUrls() {
+        JSONObject json = new JSONObject();
+        JSONArray myArray = new JSONArray();
+        Cursor mCursor = this.myDataBase.query(true, GALLERY_TABLE, new String[]{GALLERY_TABLE_FIELDS[7]}, null, null, null, null, null, null);
+        if (mCursor.moveToFirst()) {
+            do {
+                myArray.put(mCursor.getString(0));
+            } while (mCursor.moveToNext());
+        }
+        try {
+            json.putOpt("existImageData", myArray);
+        } catch (JSONException e) {
+
+        }
+
+        return json;
+    }
+
+    private void updateOrderStatus(JSONArray jsArr) {
+
+        try {
+
+
+            for (int i = 0; i < jsArr.length(); i++) {
+                JSONObject jsId = jsArr.getJSONObject(i);
+                ContentValues cv = new ContentValues();
+                cv.put("comments", jsId.getString("comment"));
+                this.myDataBase.update(ORDERS_TABLE, cv, "_id=?", new String[]{jsId.getString("id")});
+            }
+        } catch (JSONException e) {
+
+        }
+    }
+
+
+    public void receiveCommentFromServer() {
+        //TODO
+        RequestQueue queue = Volley.newRequestQueue(myContext);
+        String url = "http://www.dukon.uz/getStatuses.php";
+
+        JSONObject jsondata = new JSONObject();
+        try {
+            jsondata.putOpt("userId", String.valueOf(Login.getUserId()));
+        } catch (JSONException e) {
+
+        }
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, jsondata,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            updateOrderStatus(response.getJSONArray("orderIds"));
+                        } catch (JSONException e) {
+
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //mTextView.setText("That didn't work!");
+            }
+        });
+// Add the request to the RequestQueue.
+        queue.add(jsonRequest);
+
+    }
+
+
+    public void getUsersFromServer() {
+        RequestQueue queue = Volley.newRequestQueue(myContext);
+        String url = "http://www.dukon.uz/getUsers.php&sec=sac241cfSac41";
+
+
+        // Request a string response from the provided URL.
+        StringRequest jsonRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        updateUsersTable(response);
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //mTextView.setText("That didn't work!");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(jsonRequest);
+    }
+
+    private void updateUsersTable(String query) {
+        this.myDataBase.execSQL("delete from " + CUSTOMER_TABLE);
+        this.myDataBase.execSQL(query);
+    }
+
+    public void getNewImagesList() {
+
+        synchronizeImagesFromGallery();
+        //List<String> resList = new ArrayList<>();
+//        RequestQueue queue = Volley.newRequestQueue(myContext);
+//        String url = "http://www.dukon.uz/getNewImages.php";
+//
+//
+//        // Request a string response from the provided URL.
+//        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, getAllImageUrls(),
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        downloadFiles(response);
+//                        synchronizeImagesFromGallery();
+//                        // Display the first 500 characters of the response string.
+//
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                //mTextView.setText("That didn't work!");
+//            }
+//        });
+//        // Add the request to the RequestQueue.
+//        queue.add(jsonRequest);
+
+    }
+
+    private void downloadFiles(JSONObject json) {
+
+        try {
+            JSONArray jsArr = json.getJSONArray("data");
+            String url_Beginning = "http://www.dukon.uz/images/saggallery/thumbs/";
+
+            for (int i = 0; i < jsArr.length(); i++) {
+                String myUrl = url_Beginning + jsArr.getString(i);
+
+
+                URL u = new URL(myUrl);
+
+                InputStream is = u.openStream();
+
+                DataInputStream dis = new DataInputStream(is);
+
+                byte[] buffer = new byte[1024];
+                int length;
+
+                FileOutputStream fos = new FileOutputStream(new File(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + jsArr.getString(i)));
+                while ((length = dis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, length);
+                }
+            }
+
+        } catch (MalformedURLException mue) {
+            Log.e("SYNC getUpdate", "malformed url error", mue);
+        } catch (IOException ioe) {
+            Log.e("SYNC getUpdate", "io error", ioe);
+        } catch (SecurityException se) {
+            Log.e("SYNC getUpdate", "security error", se);
+        } catch (JSONException sse) {
+            Log.e("SYNC getUpdate", "security error", sse);
+        }
+    }
+
 
 }

@@ -18,10 +18,18 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -192,16 +200,9 @@ public class OrderDetailsActivity extends AppCompatActivity {
 
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            if (DatabaseOpenHelper.getInstance(getBaseContext()).createNewOrder()) {
+                                            if (sendToServer(DatabaseOpenHelper.getInstance(getBaseContext()).createNewOrder())) {
 
 
-                                                OrderColourSize.CART_ITEM_MAP.clear();
-                                                OrderColourSize.CART_ITEMS.clear();
-                                                OrderColourSize.CART_SUB_ITEMS.clear();
-                                                Toast toast = Toast.makeText(getBaseContext(),
-                                                        getResources().getString(R.string.order_sent), Toast.LENGTH_SHORT);
-                                                toast.show();
-                                                OrderColourSize.notifyChange();
                                                 finish();
                                             } else {
 
@@ -249,6 +250,39 @@ public class OrderDetailsActivity extends AppCompatActivity {
 
     }
 
+    private boolean sendToServer(JSONObject jsondata) {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this.getBaseContext());
+        String url = "http://www.dukon.uz/getOrder.php";
+
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, jsondata,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        String a = response.toString();
+                        OrderColourSize.CART_ITEM_MAP.clear();
+                        OrderColourSize.CART_ITEMS.clear();
+                        OrderColourSize.CART_SUB_ITEMS.clear();
+                        Toast toast = Toast.makeText(getBaseContext(),
+                                getResources().getString(R.string.order_sent), Toast.LENGTH_SHORT);
+                        toast.show();
+                        OrderColourSize.notifyChange();
+                        //finish();
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //mTextView.setText("That didn't work!");
+            }
+        });
+// Add the request to the RequestQueue.
+        queue.add(jsonRequest);
+        return true;
+    }
 
     private File createCSVfile() {
 
@@ -618,7 +652,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
 //
 //                    desSet.add(design+" "+colorNum + " " + color);
                     OrderColourSize.QualityDesignItem qual = DatabaseOpenHelper.getInstance(null).getQualityItemByName(group, String.valueOf(item.rugcolour_id));
-                    qualSet.add(DatabaseOpenHelper.getInstance(null).getArticleFromQualAndPal(qual.quality_id, qual.pallete_id));//EXP
+                    qualSet.add(DatabaseOpenHelper.getInstance(null).getArticleFromQualAndPal(qual.quality_id, qual.pallete_id) + " " + group.substring(0, 2));//EXP
                     String strSize = DatabaseOpenHelper.getInstance(null).getSizeNameById(item.size_id);
                     String shape = DatabaseOpenHelper.getInstance(null).getSizeShapeById(item.size_id);
 
@@ -643,7 +677,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
                     if (width1 != width2)
                         return width2 - width1;
                     else
-                        return height1 - height2;
+                        return height2 - height1;
                 }
             };
             Collections.sort(sizeArray, sizeCom);
@@ -669,7 +703,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
             for (String group : cartItemsList) {
 
                 String design = group.substring(2, 6);
-                String quality = "IMPERIAL";// = group.substring(0, 2);
+                String quality = "IMPERIAL AC";// = group.substring(0, 2);
 
 
                 for (OrderColourSize.ColourSizeItem item : CIM.get(group)) {
@@ -678,7 +712,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
                     String colorNum = DatabaseOpenHelper.getInstance(null).getRugcolourCodeFromId(String.valueOf(item.rugcolour_id));
                     String resDes = design + " " + colorNum + " " + color;
                     OrderColourSize.QualityDesignItem qual = DatabaseOpenHelper.getInstance(null).getQualityItemByName(group, String.valueOf(item.rugcolour_id));
-                    quality = DatabaseOpenHelper.getInstance(null).getArticleFromQualAndPal(qual.quality_id, qual.pallete_id);//EXP ;
+                    quality = DatabaseOpenHelper.getInstance(null).getArticleFromQualAndPal(qual.quality_id, qual.pallete_id) + " " + group.substring(0, 2);//EXP ;
 
 
                     String strSize = DatabaseOpenHelper.getInstance(null).getSizeNameById(item.size_id);
@@ -827,7 +861,8 @@ public class OrderDetailsActivity extends AppCompatActivity {
                         --i;
                         s -= familys[i].list.size() + 1;
                     }
-                    qualityDesign = familys[i].name + familys[i].list.get(r - s - 1).data[0].substring(0, 4);
+                    int fnamelength = familys[i].name.length() - 2;
+                    qualityDesign = familys[i].name.substring(fnamelength) + familys[i].list.get(r - s - 1).data[0].substring(0, 4);
 
                     detailIntent.putExtra(ArticleDetailActivity.ARG_QUALITY_DESIGN, qualityDesign);//todo
                     startActivity(detailIntent);

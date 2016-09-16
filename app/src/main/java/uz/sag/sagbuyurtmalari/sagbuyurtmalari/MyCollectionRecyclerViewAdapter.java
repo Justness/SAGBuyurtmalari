@@ -91,10 +91,13 @@ public class MyCollectionRecyclerViewAdapter extends RecyclerView.Adapter<MyColl
                 //holder.mContentView.setText(file.getPath()+THUMBS_DIRECTORY+"AC0023_PC73_028.jpg");
                 // get input stream
                 // load image as Drawable
+
                 holder.mImgUrl.setImageBitmap(myBitmap);
 //                double coef = holder.mImgUrl.getWidth()/holder.mImgUrl.getHeight();
 //                if ((coef>3.5) ||( coef < 0.35)) holder.mImgUrl.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
+                RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(200, 300); // (width, height)
+                holder.mView.setLayoutParams(params);
                 // holder.mImgUrl.setImageResource(R.drawable.empty_photo);
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override

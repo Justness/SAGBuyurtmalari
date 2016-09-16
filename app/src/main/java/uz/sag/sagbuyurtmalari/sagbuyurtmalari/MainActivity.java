@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
@@ -21,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import java.io.File;
 import java.util.Locale;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
@@ -40,7 +38,7 @@ public class MainActivity extends AppCompatActivity
     public static Registration mRegFragment;
     public static final String LOCAL = "uz";
 
-    private int navId = 0;
+    public static int navId = 1;
 
     @Override
     protected void onDestroy() {
@@ -52,7 +50,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Login.getUserId() == 1)
         setContentView(R.layout.activity_main);
+        else
+            setContentView(R.layout.activity_main_client);
 
         Locale locale = new Locale(MainActivity.LOCAL);
         Locale.setDefault(locale);
@@ -197,12 +198,11 @@ public class MainActivity extends AppCompatActivity
 
 
     public static boolean syncRugs() {
-
-        File file = Environment.getExternalStorageDirectory();
 //
-        DatabaseOpenHelper.getInstance(null).synchronizeImagesFromGallery(file.getPath() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY);
+        DatabaseOpenHelper.getInstance(null).getNewImagesList();
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -271,9 +271,11 @@ public class MainActivity extends AppCompatActivity
             transaction.commit();
 
         } else if (id == R.id.nav_share) { //News
+            navId = 1;
             Intent intent = new Intent(this, News.class);
             startActivity(intent);
         } else if (id == R.id.nav_send) { //About company
+            navId = 1;
             Intent intent = new Intent(this, AboutCompany.class);
             startActivity(intent);
         }
@@ -345,6 +347,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onOrderItemSelected(String id) {
+        navId = 1;
         Intent detailIntent = new Intent(this, OrderDetailsActivity.class);
         detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
         startActivity(detailIntent);

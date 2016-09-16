@@ -1,6 +1,7 @@
 package uz.sag.sagbuyurtmalari.sagbuyurtmalari;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -25,16 +26,19 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        SharedPreferences settings = getSharedPreferences("login", 0);
         email = (EditText) findViewById(R.id.email);
+        email.setText(settings.getString("login", "Login"));
         password = (EditText) findViewById(R.id.password);
+        password.requestFocus();
         login = (Button) findViewById(R.id.login_id);
         login.setOnClickListener(this);
+
+        DatabaseOpenHelper.getInstance(getBaseContext()).getUsersFromServer();
     }
 
     @Override
     public void onClick(View v) {
-
 
         Intent intent;
 
@@ -44,7 +48,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         if (strMail.length() > 0 && strPass.length() > 0) {
             user_id = DatabaseOpenHelper.getInstance(getBaseContext()).getCustomerIdAuth(strMail, strPass);
             if (user_id != 0) {
-
+                SharedPreferences.Editor settings = getSharedPreferences("login", 0).edit();
+                settings.putString("login", strMail);
+                settings.commit();
                 intent = new Intent(getBaseContext(), MainActivity.class);
                 startActivity(intent);
             } else {
