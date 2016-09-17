@@ -33,6 +33,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -878,16 +879,21 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         return json;
     }
 
-    private void updateOrderStatus(JSONArray jsArr) {
+    private void updateOrderStatus(JSONObject js) {
 
         try {
 
+            JSONObject jsArr = js.getJSONObject("orderIds");
 
-            for (int i = 0; i < jsArr.length(); i++) {
-                JSONObject jsId = jsArr.getJSONObject(i);
+            Iterator<String> keys = jsArr.keys();
+
+            while (keys.hasNext()) {
+                String key = (String) keys.next();
+
+
                 ContentValues cv = new ContentValues();
-                cv.put("comments", jsId.getString("comment"));
-                this.myDataBase.update(ORDERS_TABLE, cv, "_id=?", new String[]{jsId.getString("id")});
+                cv.put("comments", jsArr.getString(key));
+                this.myDataBase.update(ORDERS_TABLE, cv, "_id=?", new String[]{key});
             }
         } catch (JSONException e) {
 
@@ -912,11 +918,10 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            updateOrderStatus(response.getJSONArray("orderIds"));
-                        } catch (JSONException e) {
 
-                        }
+
+                        updateOrderStatus(response);
+
 
                     }
                 }, new Response.ErrorListener() {
@@ -962,41 +967,42 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public void getNewImagesList() {
 
-        synchronizeImagesFromGallery();
+//        synchronizeImagesFromGallery();
         //List<String> resList = new ArrayList<>();
-//        RequestQueue queue = Volley.newRequestQueue(myContext);
-//        String url = "http://www.dukon.uz/getNewImages.php";
-//
-//
-//        // Request a string response from the provided URL.
-//        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, getAllImageUrls(),
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        downloadFiles(response);
-//                        synchronizeImagesFromGallery();
-//                        // Display the first 500 characters of the response string.
-//
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                //mTextView.setText("That didn't work!");
-//            }
-//        });
-//        // Add the request to the RequestQueue.
-//        queue.add(jsonRequest);
+        RequestQueue queue = Volley.newRequestQueue(myContext);
+        String url = "http://www.dukon.uz/getNewImages.php";
+
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, getAllImageUrls(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        downloadFiles(response);
+                        synchronizeImagesFromGallery();
+                        // Display the first 500 characters of the response string.
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //mTextView.setText("That didn't work!");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(jsonRequest);
 
     }
 
-    private void downloadFiles(JSONObject json) {
+    private synchronized void downloadFiles(JSONObject json) {
 
         try {
             JSONArray jsArr = json.getJSONArray("data");
-            String url_Beginning = "http://www.dukon.uz/images/saggallery/thumbs/";
+            String url_thumbs = "http://www.dukon.uz/images/saggallery/thumbs/";
+            String url_imgs = "http://www.dukon.uz/images/saggallery/";
 
             for (int i = 0; i < jsArr.length(); i++) {
-                String myUrl = url_Beginning + jsArr.getString(i);
+                String myUrl = url_thumbs + jsArr.getString(i);
 
 
                 URL u = new URL(myUrl);
@@ -1009,6 +1015,25 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                 int length;
 
                 FileOutputStream fos = new FileOutputStream(new File(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.THUMBS_DIRECTORY + jsArr.getString(i)));
+                while ((length = dis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, length);
+                }
+            }
+
+            for (int i = 0; i < jsArr.length(); i++) {
+                String myUrl = url_imgs + jsArr.getString(i);
+
+
+                URL u = new URL(myUrl);
+
+                InputStream is = u.openStream();
+
+                DataInputStream dis = new DataInputStream(is);
+
+                byte[] buffer = new byte[1024];
+                int length;
+
+                FileOutputStream fos = new FileOutputStream(new File(Environment.getExternalStorageDirectory() + MyCollectionRecyclerViewAdapter.IMAGES_DIRECTORY + jsArr.getString(i)));
                 while ((length = dis.read(buffer)) > 0) {
                     fos.write(buffer, 0, length);
                 }

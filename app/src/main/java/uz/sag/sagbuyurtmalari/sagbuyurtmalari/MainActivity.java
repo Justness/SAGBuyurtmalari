@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity
     public static Registration mRegFragment;
     public static final String LOCAL = "uz";
 
-    public static int navId = 1;
+    public int navId = -1;
 
     @Override
     protected void onDestroy() {
@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity
             String query = intent.getStringExtra(SearchManager.QUERY);
             //doMySearch(query);
         }
+        if (navId == -1) navId = R.id.nav_camera;
     }
 
 
@@ -224,6 +225,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+
         if (navId == id) return true;
         navId = id;
 
@@ -271,11 +273,11 @@ public class MainActivity extends AppCompatActivity
             transaction.commit();
 
         } else if (id == R.id.nav_share) { //News
-            navId = 1;
+
             Intent intent = new Intent(this, News.class);
             startActivity(intent);
         } else if (id == R.id.nav_send) { //About company
-            navId = 1;
+
             Intent intent = new Intent(this, AboutCompany.class);
             startActivity(intent);
         }
@@ -347,9 +349,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onOrderItemSelected(String id) {
-        navId = 1;
+
         Intent detailIntent = new Intent(this, OrderDetailsActivity.class);
         detailIntent.putExtra(ArticleDetailFragment.ARG_ITEM_ID, id);
+        navId = R.id.nav_camera;
         startActivity(detailIntent);
     }
 

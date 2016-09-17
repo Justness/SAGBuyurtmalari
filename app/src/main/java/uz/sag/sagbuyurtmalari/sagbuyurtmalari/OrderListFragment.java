@@ -15,7 +15,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dbadapters.DatabaseOpenHelper;
-import uz.sag.sagbuyurtmalari.sagbuyurtmalari.dummy.DummyContent;
 
 
 public class OrderListFragment extends ListFragment {
@@ -144,7 +143,10 @@ public class OrderListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onOrderItemSelected(DummyContent.ITEMS.get(position).id);
+        mAdapter.getCursor().moveToFirst();
+        mAdapter.getCursor().move(position);
+
+        mCallbacks.onOrderItemSelected(mAdapter.getCursor().getString(0));
     }
 
     @Override
